@@ -4,8 +4,21 @@ import type { Node } from "$lib/osm/overpass"
 import type { MatchedBusStop } from "../matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
 
+function getWheelchairTag(wheelchairBoarding: string) {
+  switch (wheelchairBoarding) {
+    case "1": // "Some vehicles at this stop can be boarded by a rider in a wheelchair"
+      return "yes"
+    case "2": // "Wheelchair boarding is not possible at this stop"
+      return "no"
+    case "0": // "No accessibility information for the stop"
+    default:
+      return undefined
+  }
+}
+
 function tagsForOsmBusStop(stop: GTFSStop) {
   const sanitizedName = stop.stop_name.replaceAll(/ +/g, " ").trim()
+  const wheelchairTag = getWheelchairTag(stop.wheelchair_boarding)
 
   return {
     "highway": "bus_stop",
@@ -15,8 +28,6 @@ function tagsForOsmBusStop(stop: GTFSStop) {
     // "public_transport": "platform",
     "name": sanitizedName,
     "ref": stop.stop_code,
-    "wheelchair": stop.wheelchair_boarding === "1" ? "yes" : "no",
-    "source:wheelchair": "King County Metro GTFS",
     "network": "King County Metro",
     "network:short": "KCM",
     "network:wikidata": "Q6411393",
@@ -26,7 +37,11 @@ function tagsForOsmBusStop(stop: GTFSStop) {
     "operator:wikidata": "Q6411393",
     "operator:wikipedia": "en:King County Metro",
     "gtfs:feed": "US-WA-KCM",
-    "gtfs:stop_id": stop.stop_id
+    "gtfs:stop_id": stop.stop_id,
+    ...(wheelchairTag ? {
+      "wheelchair": wheelchairTag,
+      "source:wheelchair": "King County Metro GTFS"
+    } : { })
   }
 }
 
