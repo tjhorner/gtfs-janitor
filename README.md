@@ -27,6 +27,7 @@ You may also discuss the project in the [OpenStreetMap World](https://discord.gg
 - Generalization for other GTFS feeds
 - Architectural improvements
   - The project only has a very loose structure that will be difficult to refactor in the future. More thought should be put into the architecture so it is easier to maintain and extend.
+  - There are currently no automated tests. This is important especially for the matching algorithm; we should write tests in order to maintain data integrity and prevent regressions.
 
 ## License
 
