@@ -5,16 +5,16 @@
   import MultipleStopsDisambiguator from "$lib/components/MultipleStopsDisambiguator.svelte"
   import StopMatcher from "$lib/components/StopMatcher.svelte"
   import { OsmChangeFile } from "$lib/osm/osmchange"
-  import { setContext } from "svelte"
   import { processStopMatches } from "$lib/pipeline/actions/process-stop-matches"
   import Center from "$lib/components/Center.svelte"
+  import { setOsmChangeContext } from "$lib/context/osmchange"
 
   let gtfsData: Readonly<GTFSData> | undefined
   let matchedStops: MatchedBusStop[] = [ ]
   let step: "upload" | "match" | "disambiguate" | "process" | "export" = "upload"
 
   let osmChange = new OsmChangeFile()
-  setContext("osmChange", osmChange)
+  setOsmChangeContext(osmChange)
 
   function handleGtfsData(event: CustomEvent<GTFSData>) {
     gtfsData = Object.freeze(event.detail)

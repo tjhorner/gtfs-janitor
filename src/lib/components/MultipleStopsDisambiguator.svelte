@@ -1,15 +1,15 @@
 <script lang="ts">
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import type { DisambiguationAction } from "$lib/pipeline/disambiguator/actions"
-  import { createEventDispatcher, getContext, onMount } from "svelte"
-  import StopDisambiguator from "./StopDisambiguator.svelte"
-  import { OsmChangeFile } from "$lib/osm/osmchange"
+  import { createEventDispatcher, onMount } from "svelte"
+  import StopDisambiguator from "./StopDisambiguator/StopDisambiguator.svelte"
+  import { getOsmChangeContext } from "$lib/context/osmchange"
 
   export let matches: MatchedBusStop[]
 
   const dispatch = createEventDispatcher<{ done: void }>()
 
-  const osmChange = getContext<OsmChangeFile>("osmChange")
+  const osmChange = getOsmChangeContext()
 
   let currentMatchIndex = -1
 
@@ -61,7 +61,7 @@
 </style>
 
 {#if currentMatchIndex !== -1}
-  <StopDisambiguator match={currentMatch} on:submit={handleActions}>
+  <StopDisambiguator matchedStop={currentMatch} on:submit={handleActions}>
     <div class="progress" slot="controls">
       {remainingAmbiguousMatches} ambiguous matches remaining
     </div>
