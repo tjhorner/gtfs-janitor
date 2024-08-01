@@ -194,7 +194,12 @@
 
     {#each match.match.elements as element, index}
       <Marker lngLat={[ element.lon, element.lat ]} on:click={() => cycleAction(index)}>
-        <div class="marker-circle candidate" style={`background-color: ${colors[index]}`}>
+        <div
+          class="marker-circle candidate"
+          class:matched={selectedActions[index] === "match"}
+          class:deleted={selectedActions[index] === "delete"}
+          style={`background-color: ${colors[index]}`}
+        >
           {index + 1}
         </div>
       </Marker>
@@ -246,7 +251,7 @@
   </p>
 </Modal>
 
-<svelte:window on:keydown={handleKeyboardShortcuts} />
+<svelte:window on:keydown={handleKeyboardShortcuts} on:beforeunload|preventDefault />
 
 <style>
   :global(.disambiguator-map) {
@@ -263,10 +268,19 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
+    transition: box-shadow 0.1s ease;
   }
 
   .marker-circle.candidate {
     cursor: pointer;
+  }
+
+  .marker-circle.matched {
+    box-shadow: 0 0 5px 8px lime;
+  }
+
+  .marker-circle.deleted {
+    box-shadow: 0 0 5px 8px red;
   }
 
   .marker-circle.gtfs {
