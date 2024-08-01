@@ -10,7 +10,9 @@ function tagsForOsmBusStop(stop: GTFSStop) {
   return {
     "highway": "bus_stop",
     "bus": "yes",
-    "public_transport": "platform",
+    // TODO: Conditionally apply `public_transport=platform` based on
+    // whether there is a separately mapped platform
+    // "public_transport": "platform",
     "name": sanitizedName,
     "ref": stop.stop_code,
     "wheelchair": stop.wheelchair_boarding === "1" ? "yes" : "no",
@@ -66,9 +68,15 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
 
     modifiedNode.tags = {
       ...modifiedNode.tags,
-      ...tagsForOsmBusStop(stopMatch.stop)
+      ...tagsForOsmBusStop(stopMatch.stop),
+      "gtfs_janitor:match_strategy": stopMatch.match.matchedBy
     }
 
+    if (modifiedNode.tags["disused:highway"]) {
+      console.log(modifiedNode)
+    }
+
+    delete modifiedNode.tags["disused:highway"]
     osmChange.modifyElement(modifiedNode)
   }
 }

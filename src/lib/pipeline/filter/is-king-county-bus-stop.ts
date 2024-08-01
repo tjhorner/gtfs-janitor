@@ -9,6 +9,7 @@ export const isKingCountyBusStop = (element: OverpassElement) => (
     &&
   (
     element.tags["bus"] === "yes" ||
-    element.tags["highway"] === "bus_stop"
+    element.tags["highway"] === "bus_stop" ||
+    element.tags["disused:highway"] === "bus_stop"
   )
 )

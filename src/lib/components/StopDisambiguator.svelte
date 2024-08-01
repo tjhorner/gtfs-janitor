@@ -6,6 +6,8 @@
   import { recommendDisambiguationActions, type DisambiguationRecommendations } from "$lib/pipeline/disambiguator/recommended-actions"
   import SegmentedControl from "./SegmentedControl.svelte"
   import maplibregl from "maplibre-gl"
+  import Modal from "./Modal.svelte"
+  import LinkButton from "./LinkButton.svelte"
 
   export let match: MatchedBusStop<AmbiguousBusStopMatch>
 
@@ -13,8 +15,9 @@
   let selectedActions: DisambiguationAction[] = [ ]
 
   let map: maplibregl.Map
-
   let satelliteImagery = true
+
+  let showKeyboardShortcuts = false
 
   const dispatch = createEventDispatcher<{
     submit: DisambiguationAction[]
@@ -44,9 +47,33 @@
     dispatch("submit", selectedActions)
   }
 
+  function cycleAction(index: number) {
+    if (index + 1 > match.match.elements.length) return
+
+    const currentAction = selectedActions[index]
+    const nextAction = currentAction === "ignore"
+      ? "match"
+      : currentAction === "match"
+        ? "delete"
+        : "ignore"
+
+    selectedActions[index] = nextAction
+  }
+
   function fitBounds() {
     if (!map || !bounds) return
     map.fitBounds(bounds, { padding: 200, duration: 0, maxZoom: 19 })
+  }
+
+  function handleKeyboardShortcuts(e: KeyboardEvent) {
+    if (e.key === "a") {
+      satelliteImagery = !satelliteImagery
+    } else if (e.key >= "1" && e.key <= "9") {
+      const index = parseInt(e.key) - 1
+      cycleAction(index)
+    } else if (e.key === "Enter" || e.key === "s") {
+      submitActions()
+    }
   }
 
   $: match && getRecommendations()
@@ -72,11 +99,11 @@
 <div class="split">
   <div class="info">
     <div>
-      <h2>Which stop is this?</h2>
+      <h2>{match.stop.stop_name} &mdash; <code>{match.stop.stop_id}</code></h2>
 
       <p>
-        There were multiple possible matches in OpenStreetMap for the stop <strong>{match.stop.stop_name}</strong>
-        (id: {match.stop.stop_id}). Please specify what to do with each of the possible matches.
+        There were multiple possible matches in OpenStreetMap for this stop. Please specify what to do
+        with each of the possible matches.
       </p>
 
       <ul>
@@ -87,6 +114,10 @@
 
       <p>
         If no match is selected, a new node will be created to represent this bus stop in OpenStreetMap.
+      </p>
+
+      <p>
+        <strong>Tip</strong>: You can use <LinkButton on:click={() => showKeyboardShortcuts = true}>keyboard shortcuts</LinkButton> to speed up your workflow.
       </p>
     </div>
 
@@ -162,7 +193,7 @@
     </Marker>
 
     {#each match.match.elements as element, index}
-      <Marker lngLat={[ element.lon, element.lat ]}>
+      <Marker lngLat={[ element.lon, element.lat ]} on:click={() => cycleAction(index)}>
         <div class="marker-circle candidate" style={`background-color: ${colors[index]}`}>
           {index + 1}
         </div>
@@ -191,17 +222,51 @@
   </MapLibre>
 </div>
 
+<Modal bind:shown={showKeyboardShortcuts}>
+  <h2>Tips</h2>
+
+  <p>
+    You can use the following keyboard shortcuts to speed up your workflow:
+  </p>
+
+  <ul style="padding-left: 1.5em">
+    <li>
+      <strong><kbd>A</kbd></strong>: Toggle aerial imagery
+    </li>
+    <li>
+      <strong><kbd>1-9</kbd></strong>: Cycle through the actions for the corresponding option
+    </li>
+    <li>
+      <strong><kbd>Enter</kbd> or <kbd>S</kbd></strong>: Submit the selected actions and go to next stop
+    </li>
+  </ul>
+
+  <p>
+    You can also click the nodes on the map to cycle through the actions.
+  </p>
+</Modal>
+
+<svelte:window on:keydown={handleKeyboardShortcuts} />
+
 <style>
   :global(.disambiguator-map) {
     height: 100%;
   }
 
   .marker-circle {
-    height: 20px;
-    width: 20px;
-    text-align: center;
+    height: 25px;
+    width: 25px;
+    font-size: 1.5em;
+    font-weight: bold;
     border-radius: 100%;
     color: white;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .marker-circle.candidate {
+    cursor: pointer;
   }
 
   .marker-circle.gtfs {

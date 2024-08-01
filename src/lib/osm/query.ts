@@ -5,11 +5,11 @@ export async function getBusElementsInBbox(bbox: string) {
     [out:json][bbox:${bbox}][timeout:120];
 
     (
-      nw["public_transport"="platform"];<;
+      // nw["public_transport"="platform"];<;
       nw["highway"="bus_stop"];<;
-      nw["disused:highway"="bus_stop"];
-      nw["amenity"="bus_station"];
-      nw["disused:amenity"="bus_station"];
+      nw["disused:highway"="bus_stop"];<;
+      // nw["amenity"="bus_station"];
+      // nw["disused:amenity"="bus_station"];
     );
 
     out meta;
