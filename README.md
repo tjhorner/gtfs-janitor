@@ -10,7 +10,7 @@ You can try it out [here](https://gtfs-janitor.tjhorner.dev/). (King County Metr
 
 ## Feedback
 
-This project is in a very early stage, so feedback from the OpenStreetMap community is very much appreciated. If you encounter a problem (e.g., data integrity issue, crash/bug, etc.) or have a suggestion (e.g., tag improvements, etc.), please [check the repo issues](https://github.com/tjhorner/gtfs-janitor/issues) and open one if it doesn't already exist.
+This project is in a very early stage, so feedback from the OpenStreetMap community is very much appreciated. If you encounter a problem (e.g., data integrity issue, crash/bug, etc.) or have a suggestion (e.g., tag improvements, UX enhancements, algorithm adjustments, etc.), please [check the repo issues](https://github.com/tjhorner/gtfs-janitor/issues) and open one if it doesn't already exist.
 
 You may also discuss the project in the [OpenStreetMap World](https://discord.gg/openstreetmap) Discord. I am active there as `tjhorner`, and you can find me in channels like `#developer`, `#mapping-projects`, and `#imports`. When in doubt, you can just go ahead and ping me in `#general`.
 
