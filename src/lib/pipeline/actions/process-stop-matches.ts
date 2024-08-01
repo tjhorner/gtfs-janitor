@@ -60,7 +60,10 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
         lon: stopMatch.stop.stop_lon,
         changeset: -1,
         version: 1,
-        tags: tagsForOsmBusStop(stopMatch.stop)
+        tags: {
+          ...tagsForOsmBusStop(stopMatch.stop),
+          "public_transport": "platform"
+        }
       }
 
       osmChange.addElement(newNode)
