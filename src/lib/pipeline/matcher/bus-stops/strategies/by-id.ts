@@ -6,7 +6,6 @@ import { calculateDistanceMeters } from "$lib/util/geo-math"
 export const matchByIdStrategy = {
   name: "id",
   match: (stopNodes: Node[], stopToMatch: GTFSStop): Node[] => {
-  
     const stopsMatchingId = stopNodes.filter(node => (
       node.tags["gtfs:stop_id"] === stopToMatch.stop_id ||
       node.tags["ref"] === stopToMatch.stop_id ||
@@ -14,15 +13,16 @@ export const matchByIdStrategy = {
       node.tags["ref"] === stopToMatch.stop_code
     ))
   
-    if (stopsMatchingId.length === 1) {
+    if (stopsMatchingId.length <= 1) {
       return stopsMatchingId
     }
-  
-    if (stopsMatchingId.length === 0) {
-      return [ ]
-    }
-  
-    const stopsWithRef = stopsMatchingId.filter(stop => stop.tags["ref"] === stopToMatch.stop_id)
+
+    // `ref` is typically more up-to-date than `gtfs:stop_id` because
+    // humans are more likely to edit it
+    const stopsWithRef = stopsMatchingId.filter(stop => (
+      stop.tags["ref"] === stopToMatch.stop_id ||
+      stop.tags["ref"] === stopToMatch.stop_code
+    ))
     if (stopsWithRef.length === 1) {
       return stopsWithRef
     }
@@ -34,11 +34,7 @@ export const matchByIdStrategy = {
       }))
       .filter(stop => stop.distance < 100)
       .sort((a, b) => a.distance - b.distance)
-  
-    if (closeStopsMatchingId.length === 1) {
-      return [ closeStopsMatchingId[0].stop ]
-    }
-  
+
     return closeStopsMatchingId.map(stop => stop.stop)
   }
 } satisfies BusStopMatchingStrategy<"id">

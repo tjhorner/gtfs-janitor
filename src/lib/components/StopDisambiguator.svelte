@@ -5,11 +5,14 @@
   import type { DisambiguationAction } from "$lib/pipeline/disambiguator/actions"
   import { recommendDisambiguationActions, type DisambiguationRecommendations } from "$lib/pipeline/disambiguator/recommended-actions"
   import SegmentedControl from "./SegmentedControl.svelte"
+  import maplibregl from "maplibre-gl"
 
   export let match: MatchedBusStop<AmbiguousBusStopMatch>
 
   let recommendations: DisambiguationRecommendations | null = null
   let selectedActions: DisambiguationAction[] = [ ]
+
+  let map: maplibregl.Map
 
   let satelliteImagery = true
 
@@ -41,12 +44,152 @@
     dispatch("submit", selectedActions)
   }
 
+  function fitBounds() {
+    if (!map || !bounds) return
+    map.fitBounds(bounds, { padding: 200, duration: 0, maxZoom: 19 })
+  }
+
   $: match && getRecommendations()
   $: gtfsStopLocation = [ match.stop.stop_lon, match.stop.stop_lat ] as LngLatLike
+
+  $: bounds = match.match.elements.length
+    ? match.match.elements.reduce((b, el) => {
+        return b.extend([ el.lon, el.lat ])
+      }, new maplibregl.LngLatBounds().extend(gtfsStopLocation))
+    : undefined
+
   $: allTagKeys = match.match.elements.reduce((acc, element) => {
     return acc.union(new Set(Object.keys(element.tags)))
   }, new Set<string>())
+
+  $: bounds && map && fitBounds()
+
+  onMount(() => {
+    map.once("load", fitBounds)
+  })
 </script>
+
+<div class="split">
+  <div class="info">
+    <div>
+      <h2>Which stop is this?</h2>
+
+      <p>
+        There were multiple possible matches in OpenStreetMap for the stop <strong>{match.stop.stop_name}</strong>
+        (id: {match.stop.stop_id}). Please specify what to do with each of the possible matches.
+      </p>
+
+      <ul>
+        <li><strong>Ignore</strong>: Leave this node as-is.</li>
+        <li><strong>Match</strong>: Associate this node with the bus stop and use it for edits.</li>
+        <li><strong>Delete</strong>: Delete this node in the exported changeset.</li>
+      </ul>
+
+      <p>
+        If no match is selected, a new node will be created to represent this bus stop in OpenStreetMap.
+      </p>
+    </div>
+
+    <div class="tags">
+      <table>
+        <tr>
+          <th>Key</th>
+          {#each match.match.elements as element, index}
+            <th style={`background-color: ${colors[index]}`}>
+              Option {index + 1}:
+              <a href={`https://www.openstreetmap.org/${element.type}/${element.id}`} target="_blank">{element.type} {element.id}</a>
+            </th>
+          {/each}
+        </tr>
+        {#each allTagKeys as key}
+          <tr>
+            <th class="key">{key}</th>
+            {#each match.match.elements as element}
+              <td>{element.tags[key] ?? ""}</td>
+            {/each}
+          </tr>
+        {/each}
+        <tr class="actions">
+          <td></td>
+          {#each match.match.elements as _, index}
+            <td>
+              <SegmentedControl
+                bind:value={selectedActions[index]}
+                options={[
+                  { label: "Ignore", value: "ignore" },
+                  { label: "Match", value: "match" },
+                  { label: "Delete", value: "delete" }
+                ]}
+              />
+            </td>
+          {/each}
+        </tr>
+      </table>
+    </div>
+
+    <div class="controls">
+      {#if recommendations}
+        <p>
+          <strong>Recommendation</strong>
+          <br/>
+          {recommendations.reason}
+        </p>
+      {/if}
+
+      <button class="submit" on:click={submitActions}>
+        Next
+      </button>
+
+      <slot name="controls" />
+    </div>
+  </div>
+
+  <MapLibre
+    bind:map={map}
+    style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+    class="disambiguator-map"
+  >
+    <Control position="top-left">
+      <ControlGroup>
+        <ControlButton on:click={() => satelliteImagery = !satelliteImagery}>
+          🌍
+        </ControlButton>
+      </ControlGroup>
+    </Control>
+
+    <Marker lngLat={gtfsStopLocation}>
+      <div class="marker-circle gtfs">S</div>
+    </Marker>
+
+    {#each match.match.elements as element, index}
+      <Marker lngLat={[ element.lon, element.lat ]}>
+        <div class="marker-circle candidate" style={`background-color: ${colors[index]}`}>
+          {index + 1}
+        </div>
+      </Marker>
+    {/each}
+
+    {#if satelliteImagery}
+      <RasterTileSource
+        tiles={[
+          "https://ecn.t0.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14634&pr=odbl",
+          "https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14634&pr=odbl",
+          "https://ecn.t2.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14634&pr=odbl",
+          "https://ecn.t3.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14634&pr=odbl"
+        ]}
+        tileSize={256}
+        maxzoom={20}
+        attribution="Imagery © Microsoft"
+      >
+        <RasterLayer
+          paint={{ "raster-opacity": 1 }}
+          maxzoom={23}
+          beforeId="boundary_country_outline"
+        />
+      </RasterTileSource>
+    {/if}
+  </MapLibre>
+</div>
 
 <style>
   :global(.disambiguator-map) {
@@ -149,124 +292,3 @@
     cursor: pointer;
   }
 </style>
-
-<div class="split">
-  <div class="info">
-    <div>
-      <h2>Which stop is this?</h2>
-
-      <p>
-        There were multiple possible matches in OpenStreetMap for the stop <strong>{match.stop.stop_name}</strong>.
-        Please specify what to do with each of the possible matches.
-      </p>
-
-      <ul>
-        <li><strong>Ignore</strong>: Leave this node as-is.</li>
-        <li><strong>Match</strong>: Associate this node with the bus stop and use it for edits.</li>
-        <li><strong>Delete</strong>: Delete this node in the exported changeset.</li>
-      </ul>
-
-      <p>
-        If no match is selected, a new node will be created to represent this bus stop in OpenStreetMap.
-      </p>
-    </div>
-
-    <div class="tags">
-      <table>
-        <tr>
-          <th>Key</th>
-          {#each match.match.elements as element, index}
-            <th style={`background-color: ${colors[index]}`}>
-              Option {index + 1}:
-              <a href={`https://www.openstreetmap.org/${element.type}/${element.id}`} target="_blank">{element.type} {element.id}</a>
-            </th>
-          {/each}
-        </tr>
-        {#each allTagKeys as key}
-          <tr>
-            <th class="key">{key}</th>
-            {#each match.match.elements as element}
-              <td>{element.tags[key] ?? ""}</td>
-            {/each}
-          </tr>
-        {/each}
-        <tr class="actions">
-          <td></td>
-          {#each match.match.elements as _, index}
-            <td>
-              <SegmentedControl
-                bind:value={selectedActions[index]}
-                options={[
-                  { label: "Ignore", value: "ignore" },
-                  { label: "Match", value: "match" },
-                  { label: "Delete", value: "delete" }
-                ]}
-              />
-            </td>
-          {/each}
-        </tr>
-      </table>
-    </div>
-
-    <div class="controls">
-      {#if recommendations}
-        <p>
-          <strong>Recommendation:</strong> {recommendations.reason}
-        </p>
-      {/if}
-
-      <button class="submit" on:click={submitActions}>
-        Next
-      </button>
-
-      <slot name="controls" />
-    </div>
-  </div>
-
-  <MapLibre
-    style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-    class="disambiguator-map"
-    zoom={19}
-    center={gtfsStopLocation}
-  >
-    <Control position="top-left">
-      <ControlGroup>
-        <ControlButton on:click={() => satelliteImagery = !satelliteImagery}>
-          🌍
-        </ControlButton>
-      </ControlGroup>
-    </Control>
-
-    <Marker lngLat={gtfsStopLocation}>
-      <div class="marker-circle gtfs">S</div>
-    </Marker>
-
-    {#each match.match.elements as element, index}
-      <Marker lngLat={[ element.lon, element.lat ]}>
-        <div class="marker-circle candidate" style={`background-color: ${colors[index]}`}>
-          {index + 1}
-        </div>
-      </Marker>
-    {/each}
-
-    {#if satelliteImagery}
-      <RasterTileSource
-        tiles={[
-          "https://ecn.t0.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14634&pr=odbl",
-          "https://ecn.t1.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14634&pr=odbl",
-          "https://ecn.t2.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14634&pr=odbl",
-          "https://ecn.t3.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14634&pr=odbl"
-        ]}
-        tileSize={256}
-        maxzoom={20}
-        attribution="Imagery © Microsoft"
-      >
-        <RasterLayer
-          paint={{ "raster-opacity": 1 }}
-          maxzoom={23}
-          beforeId="boundary_country_outline"
-        />
-      </RasterTileSource>
-    {/if}
-  </MapLibre>
-</div>

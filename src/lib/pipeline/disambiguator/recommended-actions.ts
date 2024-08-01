@@ -3,6 +3,7 @@ import type { MatchedBusStop } from "../matcher/bus-stops"
 import { averageDistance, calculateDistanceMeters } from "$lib/util/geo-math"
 import { matchByIdStrategy } from "../matcher/bus-stops/strategies/by-id"
 import { matchByDistanceStrategy } from "../matcher/bus-stops/strategies/by-distance"
+import { matchByNameStrategy } from "../matcher/bus-stops/strategies/by-name"
 
 export interface DisambiguationRecommendations {
   reason: string
@@ -38,6 +39,13 @@ export function recommendDisambiguationActions({ match, stop }: MatchedBusStop):
     return {
       reason: "These nodes are close to the stop location but don't match the stop name or ID. One of them is probably the other stop going the opposite direction, so you will probably want to choose the closest one and ignore the others.",
       actions: candidates.map(node => node.id === closestNodeToStop.id ? "match" : "ignore")
+    }
+  }
+
+  if (match.matchedBy === matchByNameStrategy.name) {
+    return {
+      reason: "These nodes have similar names but none are close enough to the stop location to be a clear match. Use your intuition to match the one that seems the most correct (for example: is it on the same side of the road?).",
+      actions: candidates.map(_ => "ignore")
     }
   }
 

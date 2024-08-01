@@ -11,12 +11,8 @@ export const matchByDistanceStrategy = {
         stop,
         distance: calculateDistanceMeters(stop.lat, stop.lon, stopToMatch.stop_lat, stopToMatch.stop_lon)
       }))
-      .filter(stop => stop.distance < 15)
+      .filter(stop => stop.distance < 20)
       .sort((a, b) => a.distance - b.distance)
-
-    if (stopsCloseToTarget.length === 1) {
-      return [ stopsCloseToTarget[0].stop ]
-    }
 
     return stopsCloseToTarget.map(stop => stop.stop)
   }
