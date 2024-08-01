@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fade } from "svelte/transition"
+  import { fade, scale } from "svelte/transition"
   export let shown = false
 
   function hide() { shown = false }
@@ -46,7 +46,7 @@
 
 {#if shown}
   <div class="modal" transition:fade={{ duration: 150 }}>
-    <div class="container">
+    <div class="container" transition:scale={{ duration: 150, start: 0.7 }}>
       <button class="close-button" on:click={hide}>&times;</button>
       <slot />
     </div>
