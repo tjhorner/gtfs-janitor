@@ -6,6 +6,7 @@ import { matchByDistanceStrategy } from "../matcher/bus-stops/strategies/by-dist
 import { matchByNameStrategy } from "../matcher/bus-stops/strategies/by-name"
 
 export interface DisambiguationRecommendations {
+  summary: string
   reason: string
   actions: DisambiguationAction[]
 }
@@ -24,9 +25,18 @@ export function recommendDisambiguationActions({ match, stop }: MatchedBusStop):
       const newestNode = mostRecentNodes[0]
 
       return {
+        summary: "Remove duplicate nodes",
         reason: "These nodes have identical stop IDs and are very close together; they are likely duplicates. The newest node should be preserved and the others deleted.",
         actions: candidates.map(node => node.id === newestNode.id ? "match" : "delete")
       }
+    }
+  }
+
+  if (match.matchedBy === matchByNameStrategy.name) {
+    return {
+      summary: "Manually review nodes with similar names",
+      reason: "These nodes have similar names but none are close enough to the stop location to be a clear match. Use your intuition to match the one that seems the most correct (for example: is it on the same side of the road?).",
+      actions: candidates.map(_ => "ignore")
     }
   }
 
@@ -37,15 +47,9 @@ export function recommendDisambiguationActions({ match, stop }: MatchedBusStop):
     }, { node: candidates[0], distance: Infinity }).node
 
     return {
-      reason: "These nodes are close to the stop location but don't match the stop name or ID. One of them is probably the other stop going the opposite direction, so you will probably want to choose the closest one and ignore the others.",
+      summary: "Choose the node closest to the stop",
+      reason: "These nodes are close to the stop location but don't match the stop name or ID. The closest node is likely the correct one, but use your intuition to verify this.",
       actions: candidates.map(node => node.id === closestNodeToStop.id ? "match" : "ignore")
-    }
-  }
-
-  if (match.matchedBy === matchByNameStrategy.name) {
-    return {
-      reason: "These nodes have similar names but none are close enough to the stop location to be a clear match. Use your intuition to match the one that seems the most correct (for example: is it on the same side of the road?).",
-      actions: candidates.map(_ => "ignore")
     }
   }
 

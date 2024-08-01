@@ -161,7 +161,9 @@
     <div class="controls">
       {#if recommendations}
         <p>
-          <strong>Recommendation</strong>
+          <span style="font-size: 1.2em">
+            <strong>Recommendation</strong>: {recommendations.summary}
+          </span>
           <br/>
           {recommendations.reason}
         </p>
