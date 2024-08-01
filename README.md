@@ -8,6 +8,18 @@ It currently only works with King County Metro GTFS data, but it will be general
 
 You can try it out [here](https://gtfs-janitor.tjhorner.dev/). (King County Metro's GTFS feed is available [here](https://www.soundtransit.org/GTFS-KCM/google_transit.zip).)
 
+## Future Improvements
+
+- Route matching
+  - Match GTFS routes/route masters to OSM relations
+  - Include bus stop nodes in relations
+  - Include route ways in relations using map matching technniques
+  - Add `route_ref` to bus stops
+- Better PTv2 compatibility
+  - Support for separately-mapped `public_transport=platform` ways
+  - Support for `public_transport=stop_area` relations
+- Generalization for other GTFS feeds
+
 ## License
 
 MIT
