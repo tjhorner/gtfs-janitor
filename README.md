@@ -19,6 +19,8 @@ You can try it out [here](https://gtfs-janitor.tjhorner.dev/). (King County Metr
   - Support for separately-mapped `public_transport=platform` ways
   - Support for `public_transport=stop_area` relations
 - Generalization for other GTFS feeds
+- Architectural improvements
+  - The project only has a very loose structure that will be difficult to refactor in the future. More thought should be put into the architecture so it is easier to maintain and extend.
 
 ## License
 
