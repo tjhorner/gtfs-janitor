@@ -1,0 +1,41 @@
+import type { GTFSStop } from "$lib/gtfs/parser"
+import { getDistance } from "geolib"
+
+export function calculateDistanceMeters(lat1?: number, lon1?: number, lat2?: number, lon2?: number) {
+  if (lat1 === undefined || lon1 === undefined || lat2 === undefined || lon2 === undefined) {
+    return Infinity
+  }
+
+  return getDistance(
+    { lat: lat1, lon: lon1 },
+    { lat: lat2, lon: lon2 }
+  )
+}
+
+export function averageDistance(points: readonly { lat: number, lon: number }[]): number {
+  let total = 0
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      total += calculateDistanceMeters(
+        points[i].lat,
+        points[i].lon,
+        points[j].lat,
+        points[j].lon
+      )
+    }
+  }
+
+  return total / (points.length * (points.length - 1) / 2)
+}
+
+export function getStopsBoundingBox(stops: GTFSStop[]): string {
+  const lats = stops.map(stop => stop.stop_lat)
+  const lons = stops.map(stop => stop.stop_lon)
+
+  const minLat = Math.min(...lats)
+  const maxLat = Math.max(...lats)
+  const minLon = Math.min(...lons)
+  const maxLon = Math.max(...lons)
+
+  return `${minLat},${minLon},${maxLat},${maxLon}`
+}
