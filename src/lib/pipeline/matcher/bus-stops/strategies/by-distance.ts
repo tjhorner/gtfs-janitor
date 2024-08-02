@@ -5,8 +5,8 @@ import { calculateDistanceMeters } from "$lib/util/geo-math"
 
 export const matchByDistanceStrategy = {
   name: "distance",
-  match: (stopNodes: Node[], stopToMatch: GTFSStop): Node[] => {
-    const stopsCloseToTarget = stopNodes
+  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>): Node[] => {
+    const stopsCloseToTarget = candidates
       .map(stop => ({
         stop,
         distance: calculateDistanceMeters(stop.lat, stop.lon, stopToMatch.stop_lat, stopToMatch.stop_lon)

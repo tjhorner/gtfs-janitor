@@ -25,15 +25,26 @@ export class OsmChangeFile {
     }
   }
 
+  #checkForDuplicateId(element: OverpassElement, array: any[]) {
+    const dupe = array.find(e => e[element.type][0]._attr.id === element.id)
+    if (dupe) {
+      console.warn(`Duplicate ID ${element.id} found in osmChange file`)
+      console.warn(element, dupe)
+    }
+  }
+
   addElement(element: OverpassElement) {
+    this.#checkForDuplicateId(element, this.#additions)
     this.#additions.push(this.#representAsXml(element))
   }
 
   modifyElement(element: OverpassElement) {
+    this.#checkForDuplicateId(element, this.#modifications)
     this.#modifications.push(this.#representAsXml(element))
   }
 
   deleteElement(element: OverpassElement) {
+    this.#checkForDuplicateId(element, this.#deletions)
     this.#deletions.push(this.#representAsXml(element))
   }
 

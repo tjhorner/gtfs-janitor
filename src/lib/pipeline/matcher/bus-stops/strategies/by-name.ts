@@ -27,10 +27,10 @@ const normalizeStopName = memoize((name?: string) => {
 
 export const matchByNameStrategy = {
   name: "name",
-  match: (stopNodes: Node[], stopToMatch: GTFSStop): Node[] => {
+  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>): Node[] => {
     const normalizedName = normalizeStopName(stopToMatch.stop_name)
 
-    const stopsMatchingName = stopNodes.filter(node => (
+    const stopsMatchingName = candidates.filter(node => (
       normalizeStopName(node.tags["name"]) === normalizedName ||
       normalizeStopName(node.tags["ref"]) === normalizedName
     ))

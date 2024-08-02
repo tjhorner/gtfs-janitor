@@ -20,7 +20,7 @@ export type BusStopMatch<T extends string = string> = DefiniteBusStopMatch<T> | 
 
 export type BusStopMatchingStrategy<T> = {
   name: T
-  match: (stopNodes: Node[], stopToMatch: GTFSStop) => Node[]
+  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>) => Node[]
 }
 
 export const defaultStrategies = [
@@ -29,7 +29,7 @@ export const defaultStrategies = [
   matchByDistanceStrategy
 ]
 
-export function matchBusStop(stopNodes: Node[], stopToMatch: GTFSStop) {
+export function matchBusStop(stopNodes: readonly Node[], stopToMatch: Readonly<GTFSStop>) {
   return matchBusStopWithStrategies(stopNodes, stopToMatch, defaultStrategies)
 }
 
@@ -38,28 +38,13 @@ export interface MatchedBusStop<T = BusStopMatch | null> {
   match: T
 }
 
-export async function* matchBusStopBatch(
-  stopNodes: Node[],
-  stopsToMatch: GTFSStop[]
-): AsyncIterable<MatchedBusStop> {
-  for (const stop of stopsToMatch) {
-    yield {
-      stop,
-      match: matchBusStop(stopNodes, stop)
-    }
-
-    // awful hack to allow the event loop to run
-    await new Promise(resolve => setTimeout(resolve, 0))
-  }
-}
-
 export function matchBusStopWithStrategies<T extends string>(
-  stopNodes: Node[],
-  stopToMatch: GTFSStop,
+  candidates: readonly Node[],
+  stopToMatch: Readonly<GTFSStop>,
   strategies: readonly BusStopMatchingStrategy<T>[]
 ): BusStopMatch<T> | null {
   for (const { name, match } of strategies) {
-    const matchedNodes = match(stopNodes, stopToMatch)
+    const matchedNodes = match(candidates, stopToMatch)
 
     if (matchedNodes.length === 1) {
       return {
