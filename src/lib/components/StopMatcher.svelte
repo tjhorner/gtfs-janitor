@@ -3,9 +3,7 @@
   import { isNode } from "$lib/osm/overpass"
   import { getBusElementsInBbox } from "$lib/osm/query"
   import { isKingCountyBusStop } from "$lib/pipeline/filter/is-king-county-bus-stop"
-  import { isNotRoadWayMember } from "$lib/pipeline/filter/is-not-road-way-member"
   import { type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
-  import { cached } from "$lib/util/cache"
   import { getStopsBoundingBox } from "$lib/util/geo-math"
   import type { MatchBusStopsRequest } from "$lib/workers/match-bus-stops"
   import { createEventDispatcher, onMount } from "svelte"
@@ -47,7 +45,6 @@
     const candidateNodes = osmData
       .filter(isNode)
       .filter(isKingCountyBusStop)
-      .filter(isNotRoadWayMember(osmData))
 
     const worker = new BusStopMatchWorker()
     worker.onmessage = handleWorkerMessage

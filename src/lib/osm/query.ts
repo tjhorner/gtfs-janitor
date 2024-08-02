@@ -2,15 +2,13 @@ import { queryOverpass } from "./overpass"
 
 export async function getBusElementsInBbox(bbox: string) {
   const overpassResult = await queryOverpass(`
-    [out:json][bbox:${bbox}][timeout:120];
+    [out:json][bbox:${bbox}][timeout:60];
 
-    (
-      // nw["public_transport"="platform"];<;
-      nw["highway"="bus_stop"];<;
-      nw["disused:highway"="bus_stop"];<;
-      // nw["amenity"="bus_station"];
-      // nw["disused:amenity"="bus_station"];
-    );
+    node[~"^(.+:)?highway$"~"^bus_stop$"]->.busStops;
+    way(bn.busStops)["highway"~"motorway|trunk|primary|secondary|tertiary|unclassified|residential|service"]->.roadWaysWithStops;
+    node(w.roadWaysWithStops)->.stopsOnRoadWays;
+
+    (.busStops; - .stopsOnRoadWays;);
 
     out meta;
   `)
