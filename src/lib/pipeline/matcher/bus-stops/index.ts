@@ -13,7 +13,7 @@ export interface DefiniteBusStopMatch<T> {
 export interface AmbiguousBusStopMatch<T extends string = string> {
   ambiguous: true
   matchedBy: T
-  elements: readonly Readonly<Node>[]
+  elements: Readonly<Node>[]
 }
 
 export type BusStopMatch<T extends string = string> = DefiniteBusStopMatch<T> | AmbiguousBusStopMatch<T>

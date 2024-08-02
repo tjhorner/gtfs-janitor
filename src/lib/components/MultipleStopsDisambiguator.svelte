@@ -23,6 +23,30 @@
     dispatch("done")
   }
 
+  // Remove an acted-upon node from the remaining matches
+  // and automatically match the remaining node if there's
+  // only one left
+  function removeNodeFromMatches(nodeId: number) {
+    console.log("what", nodeId)
+    for (const matchedStop of matches) {
+      const match = matchedStop.match
+      if (!match?.ambiguous) continue
+
+      const nodeIndex = match.elements.findIndex(el => el.id === nodeId)
+      if (nodeIndex !== -1) {
+        match.elements.splice(nodeIndex, 1)
+      }
+
+      if (match.elements.length === 1) {
+        matchedStop.match = {
+          ambiguous: false,
+          matchedBy: "human",
+          element: match.elements[0]
+        }
+      }
+    }
+  }
+
   function handleActions(event: CustomEvent<DisambiguationAction[]>) {
     const actions = event.detail
     const matchCandidates = currentMatch.match.elements
@@ -42,6 +66,10 @@
     actions.forEach((action, index) => {
       if (action === "delete") {
         osmChange.deleteElement(matchCandidates[index])
+      }
+
+      if (action !== "ignore") {
+        removeNodeFromMatches(matchCandidates[index].id)
       }
     })
 
