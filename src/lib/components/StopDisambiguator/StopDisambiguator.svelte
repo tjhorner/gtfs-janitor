@@ -84,7 +84,10 @@
     </div>
 
     <div class="tags">
-      <TagsTable match={matchedStop.match} {selectedActions} />
+      <TagsTable
+        match={matchedStop.match}
+        bind:selectedActions={selectedActions}
+      />
     </div>
 
     <div class="controls">
@@ -107,8 +110,8 @@
   </div>
 
   <DisambiguatorMap
+    bind:selectedActions={selectedActions}
     {matchedStop}
-    {selectedActions}
     {cycleAction}
   />
 </div>

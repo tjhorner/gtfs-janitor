@@ -39,8 +39,7 @@ function tagsForOsmBusStop(stop: GTFSStop) {
     "gtfs:feed": "US-WA-KCM",
     "gtfs:stop_id": stop.stop_id,
     ...(wheelchairTag ? {
-      "wheelchair": wheelchairTag,
-      "source:wheelchair": "King County Metro GTFS"
+      "wheelchair": wheelchairTag
     } : { })
   }
 }
@@ -86,8 +85,7 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
 
     modifiedNode.tags = {
       ...modifiedNode.tags,
-      ...tagsForOsmBusStop(stopMatch.stop),
-      "gtfs_janitor:match_strategy": stopMatch.match.matchedBy
+      ...tagsForOsmBusStop(stopMatch.stop)
     }
 
     if (modifiedNode.tags["disused:highway"]) {
