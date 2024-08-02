@@ -4,6 +4,7 @@ export const isKingCountyBusStop = (element: OverpassElement) => (
   element.tags["public_transport"] !== "stop_position" &&
   (
     element.tags["operator"]?.includes("King County Metro") ||
+    element.tags["network"]?.includes("King County Metro") ||
     element.tags["operator"] === undefined
   )
     &&
