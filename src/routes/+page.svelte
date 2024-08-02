@@ -48,7 +48,7 @@
 {:else if step === "match" && gtfsData}
   <StopMatcher {gtfsData} on:matches={handleMatchedStops} />
 {:else if step === "disambiguate"}
-  <MultipleStopsDisambiguator matches={matchedStops} on:done={onDisambiguationComplete} />
+  <MultipleStopsDisambiguator bind:matches={matchedStops} on:done={onDisambiguationComplete} />
 {:else if step === "process"}
   Processing matched bus stops...
 {:else if step === "export"}
