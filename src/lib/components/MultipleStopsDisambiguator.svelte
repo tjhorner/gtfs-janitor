@@ -27,7 +27,6 @@
   // and automatically match the remaining node if there's
   // only one left
   function removeNodeFromMatches(nodeId: number) {
-    console.log("what", nodeId)
     for (const matchedStop of matches) {
       const match = matchedStop.match
       if (!match?.ambiguous) continue
