@@ -13,7 +13,6 @@
     dispatch("gtfsData", gtfsData)
   }
 
-
   function changeConfig() {
     $importConfig = null
   }
