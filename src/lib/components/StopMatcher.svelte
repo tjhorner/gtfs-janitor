@@ -2,7 +2,6 @@
   import type { GTFSData } from "$lib/gtfs/parser"
   import { isNode } from "$lib/osm/overpass"
   import { getBusElementsInBbox } from "$lib/osm/query"
-  import { isKingCountyBusStop } from "$lib/pipeline/filter/is-king-county-bus-stop"
   import { type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { getStopsBoundingBox } from "$lib/util/geo-math"
   import type { MatchBusStopsRequest } from "$lib/workers/match-bus-stops"
@@ -10,6 +9,8 @@
   import BusStopMatchWorker from "$lib/workers/match-bus-stops?worker"
   import Center from "./Center.svelte"
   import { stopCandidates } from "$lib/stores/stop-candidates"
+  import { importConfig } from "$lib/stores/import-config"
+  import jsonata from "jsonata"
 
   export let gtfsData: GTFSData
 
@@ -43,9 +44,8 @@
     const osmData = await getBusElementsInBbox(bbox)
 
     step = "matchStops"
-    const candidateNodes = osmData
-      .filter(isNode)
-      .filter(isKingCountyBusStop)
+    const configFilter = jsonata(`$filter($,function($v,$i,$a){${$importConfig?.candidateNodeFilter}})`)
+    const candidateNodes = await configFilter.evaluate(osmData.filter(isNode))
 
     $stopCandidates = candidateNodes
 

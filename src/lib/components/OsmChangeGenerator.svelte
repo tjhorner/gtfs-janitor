@@ -7,6 +7,8 @@
   import { removeOldStops } from "$lib/pipeline/actions/remove-old-stops"
   import { stopCandidates } from "$lib/stores/stop-candidates"
   import { applyDisambiguationResults } from "$lib/pipeline/actions/apply-disambiguation-results"
+  import { importConfig } from "$lib/stores/import-config"
+  import jsonata from "jsonata"
 
   export let results: Draft<DisambiguationResults>
 
@@ -19,7 +21,7 @@
 
   let osmChangeFile: OsmChangeFile | undefined
 
-  function regenerateWithOptions() {
+  async function regenerateWithOptions() {
     const file = new OsmChangeFile()
 
     if (options.removeStagedForDeletion) {
@@ -29,13 +31,21 @@
     processStopMatches(results.matches, file, {
       createNodes: options.createNewStops,
       updateNodes: options.updateExistingStops,
+      additionalTags: $importConfig?.stopTags ?? { }
     })
 
-    if (options.removeOldStops && $stopCandidates) {
-      removeOldStops(results.matches, $stopCandidates, file)
+    if (options.removeOldStops) {
+      const candidates = await disusedStopCandidates
+      removeOldStops(results.matches, candidates, file)
     }
 
     osmChangeFile = file
+  }
+
+  async function getDisusedStopCandidates() {
+    if (!$importConfig?.disusedStopFilter) return $stopCandidates
+    const filter = jsonata(`$filter($,function($v,$i,$a){${$importConfig.disusedStopFilter}})`)
+    return await filter.evaluate($stopCandidates)
   }
 
   function exportFile() {
@@ -50,6 +60,7 @@
   }
 
   $: options && regenerateWithOptions()
+  $: disusedStopCandidates = getDisusedStopCandidates()
 </script>
 
 <style>

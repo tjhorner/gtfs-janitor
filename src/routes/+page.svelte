@@ -9,10 +9,12 @@
   import Modal from "$lib/components/Modal.svelte"
   import OsmChangeGenerator from "$lib/components/OsmChangeGenerator.svelte"
   import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
-
+  import ConfigChooser from "$lib/components/ConfigChooser.svelte"
+  import { importConfig } from "$lib/stores/import-config"
+  
   let gtfsData: Readonly<GTFSData> | undefined
   let matchedStops: MatchedBusStop[] = [ ]
-  let step: "upload" | "match" | "disambiguate" | "process" | "export" = "upload"
+  let step: "upload" | "match" | "disambiguate" | "export" = "upload"
   let disambiguationResults: Draft<DisambiguationResults> | undefined
 
   function handleGtfsData(event: CustomEvent<GTFSData>) {
@@ -57,7 +59,9 @@
   </div>
 </Modal>
 
-{#if step === "upload"}
+{#if !$importConfig}
+  <ConfigChooser />
+{:else if step === "upload"}
   <GtfsUpload on:gtfsData={handleGtfsData} />
 {:else if step === "match" && gtfsData}
   <StopMatcher {gtfsData} on:matches={handleMatchedStops} />

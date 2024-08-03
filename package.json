@@ -14,6 +14,7 @@
 		"@sveltejs/adapter-static": "^3.0.2",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@types/mustache": "^4.2.5",
 		"@types/xml": "^1.0.11",
 		"svelte": "^4.2.7",
 		"svelte-check": "^3.6.0",
@@ -27,10 +28,13 @@
 		"csvtojson": "^2.0.10",
 		"geolib": "^3.3.4",
 		"immer": "^10.1.1",
+		"jsonata": "^2.0.5",
 		"localforage": "^1.10.0",
 		"memoize": "^10.0.0",
+		"mustache": "^4.2.0",
 		"p-mutex": "^0.1.0",
 		"svelte-maplibre": "^0.9.9",
-		"xml": "^1.0.1"
+		"xml": "^1.0.1",
+		"yaml": "^2.5.0"
 	}
 }

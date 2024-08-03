@@ -3,6 +3,7 @@ import type { OsmChangeFile } from "$lib/osm/osmchange"
 import type { Node } from "$lib/osm/overpass"
 import type { MatchedBusStop } from "../matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
+import Mustache from "mustache"
 
 function getWheelchairTag(wheelchairBoarding: string) {
   switch (wheelchairBoarding) {
@@ -22,18 +23,8 @@ function tagsForOsmBusStop(stop: GTFSStop) {
 
   return {
     "highway": "bus_stop",
-    "bus": "yes",
     "name": sanitizedName,
     "ref": stop.stop_code,
-    "network": "King County Metro",
-    "network:short": "KCM",
-    "network:wikidata": "Q6411393",
-    "network:wikipedia": "en:King County Metro",
-    "operator": "King County Metro",
-    "operator:short": "KCM",
-    "operator:wikidata": "Q6411393",
-    "operator:wikipedia": "en:King County Metro",
-    "gtfs:feed": "US-WA-KCM",
     "gtfs:stop_id": stop.stop_id,
     ...(wheelchairTag ? {
       "wheelchair": wheelchairTag
@@ -41,12 +32,25 @@ function tagsForOsmBusStop(stop: GTFSStop) {
   }
 }
 
-export interface ProcessStopMatchesOptions {
-  createNodes?: boolean
-  updateNodes?: boolean
+function renderAdditionalTags(stop: GTFSStop, tags: { [key: string]: string }) {
+  return Object.fromEntries(
+    Object.entries(tags).map(([key, value]) => {
+      return [key, Mustache.render(value, stop)]
+    })
+  )
 }
 
-export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: OsmChangeFile, options: ProcessStopMatchesOptions = { }) {
+export interface ProcessStopMatchesOptions {
+  createNodes?: boolean
+  updateNodes?: boolean,
+  additionalTags?: { [key: string]: string }
+}
+
+export function processStopMatches(
+  stopMatches: MatchedBusStop[],
+  osmChange: OsmChangeFile,
+  options: ProcessStopMatchesOptions = { }
+) {
   for (const stopMatch of stopMatches) {
     if (stopMatch.match?.ambiguous) {
       console.warn(`Ambiguous match for stop ${stopMatch.stop.stop_id}: ${stopMatch.match.matchedBy}`)
@@ -65,6 +69,7 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
         version: 1,
         tags: {
           ...tagsForOsmBusStop(stopMatch.stop),
+          ...renderAdditionalTags(stopMatch.stop, options.additionalTags ?? { }),
           "public_transport": "platform"
         }
       }
@@ -91,7 +96,8 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
 
     modifiedNode.tags = {
       ...modifiedNode.tags,
-      ...tagsForOsmBusStop(stopMatch.stop)
+      ...tagsForOsmBusStop(stopMatch.stop),
+      ...renderAdditionalTags(stopMatch.stop, options.additionalTags ?? { })
     }
 
     delete modifiedNode.tags["disused:highway"]
