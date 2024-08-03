@@ -9,7 +9,7 @@
   import BusStopMatchWorker from "$lib/workers/match-bus-stops?worker"
   import Center from "./Center.svelte"
   import { stopCandidates } from "$lib/stores/stop-candidates"
-  import { importConfig } from "$lib/stores/import-config"
+  import { importProfile } from "$lib/stores/import-profile"
   import jsonata from "jsonata"
 
   export let gtfsData: GTFSData
@@ -44,8 +44,8 @@
     const osmData = await getBusElementsInBbox(bbox)
 
     step = "matchStops"
-    const configFilter = jsonata(`$filter($,function($v,$i,$a){${$importConfig?.candidateNodeFilter}})`)
-    const candidateNodes = await configFilter.evaluate(osmData.filter(isNode))
+    const profileFilter = jsonata(`$filter($,function($v,$i,$a){${$importProfile?.candidateNodeFilter}})`)
+    const candidateNodes = await profileFilter.evaluate(osmData.filter(isNode))
 
     $stopCandidates = candidateNodes
 

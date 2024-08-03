@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { configPresets } from "$lib/pipeline/config/presets"
-  import { importConfig } from "$lib/stores/import-config"
+  import { profilePresets } from "$lib/pipeline/profile/presets"
+  import { importProfile } from "$lib/stores/import-profile"
   import { createEventDispatcher } from "svelte"
   import Center from "./Center.svelte"
-  import { fetchImportConfig } from "$lib/pipeline/config"
+  import { fetchImportProfile } from "$lib/pipeline/profile"
 
   const dispatch = createEventDispatcher<{ done: void }>()
 
@@ -12,19 +12,15 @@
   let loading = false
 
   function usePreset() {
-    $importConfig = configPresets[selectedPresetIndex]
-  }
-
-  function changeConfig() {
-    $importConfig = null
+    $importProfile = profilePresets[selectedPresetIndex]
   }
 
   async function downloadFromUrl() {
     loading = true
 
     try {
-      const config = await fetchImportConfig(url)
-      $importConfig = config
+      const profile = await fetchImportProfile(url)
+      $importProfile = profile
     } catch(e) {
       alert(e)
     }
@@ -54,11 +50,11 @@
 
   <p>
     To make sure GTFS Janitor works well with your transit agency's
-    GTFS data, you need to provide a config file to tell GTFS Janitor
-    how to match your GTFS data to OpenStreetMap data. You can learn
-    about the format
+    GTFS data, you need to provide an import profile to tell GTFS Janitor
+    how to match your GTFS data with OpenStreetMap data. You can learn
+    about import profiles and how to make your own
     <a
-      href="https://github.com/tjhorner/gtfs-janitor/blob/main/docs/config.md"
+      href="https://github.com/tjhorner/gtfs-janitor/blob/main/docs/import-profile.md"
       target="_blank"
     >
       in the documentation.
@@ -66,14 +62,14 @@
   </p>
 
   <p>
-    You can either use one of the presets or enter a URL to a config file.
+    You can either use one of the presets or enter a URL to a profile.
   </p>
 
   <h2>Presets</h2>
 
   <div class="stacked">
     <select bind:value={selectedPresetIndex}>
-      {#each configPresets as { name }, index}
+      {#each profilePresets as { name }, index}
         <option value={index}>{name}</option>
       {/each}
     </select>
@@ -85,6 +81,6 @@
 
   <div class="stacked">
     <input type="url" placeholder="e.g., https://gist.githubusercontent.com/..." bind:value={url} />
-    <button on:click={downloadFromUrl} disabled={loading}>Fetch Config</button>
+    <button on:click={downloadFromUrl} disabled={loading}>Fetch Profile</button>
   </div>
 </Center>

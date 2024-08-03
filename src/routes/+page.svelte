@@ -9,8 +9,8 @@
   import Modal from "$lib/components/Modal.svelte"
   import OsmChangeGenerator from "$lib/components/OsmChangeGenerator.svelte"
   import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
-  import ConfigChooser from "$lib/components/ConfigChooser.svelte"
-  import { importConfig } from "$lib/stores/import-config"
+  import ProfileChooser from "$lib/components/ProfileChooser.svelte"
+  import { importProfile } from "$lib/stores/import-profile"
   
   let gtfsData: Readonly<GTFSData> | undefined
   let matchedStops: MatchedBusStop[] = [ ]
@@ -59,8 +59,8 @@
   </div>
 </Modal>
 
-{#if !$importConfig}
-  <ConfigChooser />
+{#if !$importProfile}
+  <ProfileChooser />
 {:else if step === "upload"}
   <GtfsUpload on:gtfsData={handleGtfsData} />
 {:else if step === "match" && gtfsData}

@@ -2,7 +2,7 @@
   import { readGtfsZip, type GTFSData } from "$lib/gtfs/parser"
   import { createEventDispatcher } from "svelte"
   import Center from "./Center.svelte"
-  import { importConfig } from "$lib/stores/import-config"
+  import { importProfile } from "$lib/stores/import-profile"
 
   const dispatch = createEventDispatcher<{
     gtfsData: GTFSData
@@ -13,8 +13,8 @@
     dispatch("gtfsData", gtfsData)
   }
 
-  function changeConfig() {
-    $importConfig = null
+  function changeProfile() {
+    $importProfile = null
   }
 </script>
 
@@ -31,11 +31,11 @@
     multiple={false}
     on:change={processUpload} />
 
-  <h2>Current Config</h2>
+  <h2>Current Profile</h2>
   
   <p>
-    You are currently using the config <strong>{$importConfig?.name}</strong>.
+    You are currently using the import profile "<strong>{$importProfile?.name}</strong>".
   </p>
 
-  <button on:click={changeConfig}>Change Config</button>
+  <button on:click={changeProfile}>Change Profile</button>
 </Center>

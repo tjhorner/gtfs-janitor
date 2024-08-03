@@ -1,10 +1,10 @@
-# Import Config Format
+# Import Profile Schema
 
-The import config file tells GTFS Janitor how to work with your transit agency's specific GTFS data and how that data should be mapped on OpenStreetMap. It can be provided as either YAML or JSON.
+The import profile tells GTFS Janitor how to work with your transit agency's specific GTFS data and how that data should be mapped on OpenStreetMap. It can be provided as either YAML or JSON.
 
-You can host the config file on something like [GitHub Gist](https://gist.github.com/) and provide the URL so others can use it.
+You can host it on something like [GitHub Gist](https://gist.github.com/) and provide the URL so others can use it.
 
-If you need to customize an aspect of GTFS Janitor that isn't covered by the config file, please open an issue. Thanks!
+If you need to customize an aspect of GTFS Janitor that isn't covered by the profile schema, please open an issue. Thanks!
 
 ## Examples
 
@@ -52,7 +52,7 @@ stopTags:
 
 ### `name`
 
-A descriptive name for the config, usually the name of the transit agency.
+A descriptive name for the profile, usually the name of the transit agency.
 
 ### `candidateNodeFilter`
 

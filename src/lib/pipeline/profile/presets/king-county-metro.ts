@@ -1,6 +1,6 @@
-import type { ImportConfig } from ".."
+import type { ImportProfile } from ".."
 
-export const kcmConfig: ImportConfig = {
+export const kcmProfile: ImportProfile = {
   name: "King County Metro (Washington, USA)",
   candidateNodeFilter:
   `(

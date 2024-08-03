@@ -7,7 +7,7 @@
   import { removeOldStops } from "$lib/pipeline/actions/remove-old-stops"
   import { stopCandidates } from "$lib/stores/stop-candidates"
   import { applyDisambiguationResults } from "$lib/pipeline/actions/apply-disambiguation-results"
-  import { importConfig } from "$lib/stores/import-config"
+  import { importProfile } from "$lib/stores/import-profile"
   import jsonata from "jsonata"
 
   export let results: Draft<DisambiguationResults>
@@ -31,7 +31,7 @@
     processStopMatches(results.matches, file, {
       createNodes: options.createNewStops,
       updateNodes: options.updateExistingStops,
-      additionalTags: $importConfig?.stopTags ?? { }
+      additionalTags: $importProfile?.stopTags ?? { }
     })
 
     if (options.removeOldStops) {
@@ -43,8 +43,8 @@
   }
 
   async function getDisusedStopCandidates() {
-    if (!$importConfig?.disusedStopFilter) return $stopCandidates
-    const filter = jsonata(`$filter($,function($v,$i,$a){${$importConfig.disusedStopFilter}})`)
+    if (!$importProfile?.disusedStopFilter) return $stopCandidates
+    const filter = jsonata(`$filter($,function($v,$i,$a){${$importProfile.disusedStopFilter}})`)
     return await filter.evaluate($stopCandidates)
   }
 

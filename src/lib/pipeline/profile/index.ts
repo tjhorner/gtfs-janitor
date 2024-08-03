@@ -1,14 +1,14 @@
-export interface ImportConfig {
+export interface ImportProfile {
   name: string
   candidateNodeFilter: string
   disusedStopFilter?: string
   stopTags: { [key: string]: string }
 }
 
-export async function fetchImportConfig(url: string): Promise<ImportConfig> {
+export async function fetchImportProfile(url: string): Promise<ImportProfile> {
   const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`Failed to fetch import config: ${response.statusText}`)
+    throw new Error(`Failed to fetch import profile: ${response.statusText}`)
   }
 
   const config = await response.text()
@@ -25,10 +25,10 @@ export async function fetchImportConfig(url: string): Promise<ImportConfig> {
     parsedConfig = parse(config)
   }
 
-  return validateImportConfig(parsedConfig)
+  return validateImportProfile(parsedConfig)
 }
 
-export function validateImportConfig(config: any): ImportConfig {
+export function validateImportProfile(config: any): ImportProfile {
   if (!config.name || typeof config.name !== 'string') {
     throw new Error("name must be a string")
   }
