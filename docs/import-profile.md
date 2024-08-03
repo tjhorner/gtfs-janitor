@@ -58,13 +58,15 @@ A descriptive name for the profile, usually the name of the transit agency.
 
 A [JSONata](https://jsonata.org/) expression that will be used to filter out the nodes that GTFS Janitor will consider as candidates for stop matching. This expression should return `true` for nodes that are potential stops and `false` for nodes that are not.
 
-The expression is evaluated against each node in the OSM data.
+The expression is evaluated against each node in the OSM data and should return `true` for nodes that are potential stops and `false` for nodes that are not.
 
 ### `disusedStopFilter`
 
-A [JSONata](https://jsonata.org/) expression that will be used to filter out the nodes that GTFS Janitor will consider as candidates for disused stops. Usually you will want this to be similar to your `candidateNodeFilter` but more strict to avoid marking too many stops as disused.
+_Optional_
 
-The expression is evaluated against each node in the OSM data.
+A [JSONata](https://jsonata.org/) expression that will be used to filter out the nodes that GTFS Janitor will consider as candidates for disused stops. It is passed a list of nodes that have already been filtered for stop ID existence. Usually you will want this to be similar to your `candidateNodeFilter` but more strict to avoid marking too many stops as disused.
+
+The expression is evaluated against each node in the OSM data and should return `true` for nodes that are potential disused stops and `false` for nodes that are not.
 
 ### `stopTags`
 
@@ -74,3 +76,12 @@ A mapping of tags that should be added to the bus stop nodes that GTFS Janitor c
 > It is recommended to quote tag values in the YAML file. YAML parsers may interpret values such as `yes` and `no` as actual boolean values, not strings, so it's best to be explicit.
 
 You can use a [mustache](https://mustache.github.io/) template to reference the GTFS stop fields. For example, `{{ stop_id }}` will be replaced with the value of the `stop_id` field in the GTFS data.
+
+Note that the node will already have the following tags by default, so you don't need to include them yourself:
+
+- `public_transport=platform`
+- `highway=bus_stop`
+- `name={{ stop_name }}`
+- `ref={{ stop_code }}`
+- `gtfs:stop_id={{ stop_id }}`
+- `wheelchair=yes/no`
