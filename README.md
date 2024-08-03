@@ -4,9 +4,9 @@
 
 This is a web-based tool for syncing GTFS feeds with OpenStreetMap data. It performs matching of GTFS stops to nodes in OSM and assists users in resolving ambiguous matches. After import, it will provide an osmChange file that can be reviewed in an external editor.
 
-It was built to facilitate [this import](https://wiki.openstreetmap.org/wiki/Automated_edits/tjhorner-import) and currently only works with King County Metro GTFS data, but it will be generalized in the future to work with other transit feeds.
+You can configure it to work with your transit agency's GTFS feed by writing an import profile. You can learn more about import profiles in [the documentation](docs/import-profile.md).
 
-You can try it out [here](https://gtfs-janitor.tjhorner.dev/). (King County Metro's GTFS feed is available [here](https://www.soundtransit.org/GTFS-KCM/google_transit.zip).)
+You can try it out [here](https://gtfs-janitor.tjhorner.dev/). (To quickly demo it, you can use [King County Metro's GTFS feed](https://www.soundtransit.org/GTFS-KCM/google_transit.zip).)
 
 ## Feedback
 
@@ -24,7 +24,6 @@ You may also discuss the project in the [OpenStreetMap World](https://discord.gg
 - Better PTv2 compatibility
   - Support for separately-mapped `public_transport=platform` ways
   - Support for `public_transport=stop_area` relations
-- Generalization for other GTFS feeds
 - Architectural improvements
   - The project only has a very loose structure that will be difficult to refactor in the future. More thought should be put into the architecture so it is easier to maintain and extend.
   - There are currently no automated tests. This is important especially for the matching algorithm; we should write tests in order to maintain data integrity and prevent regressions.
