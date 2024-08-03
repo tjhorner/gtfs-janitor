@@ -26,7 +26,10 @@
 		"@zip.js/zip.js": "^2.7.47",
 		"csvtojson": "^2.0.10",
 		"geolib": "^3.3.4",
+		"immer": "^10.1.1",
+		"localforage": "^1.10.0",
 		"memoize": "^10.0.0",
+		"p-mutex": "^0.1.0",
 		"svelte-maplibre": "^0.9.9",
 		"xml": "^1.0.1"
 	}

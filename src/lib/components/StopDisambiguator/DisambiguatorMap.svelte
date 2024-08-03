@@ -3,7 +3,7 @@
   import { Control, ControlButton, ControlGroup, MapLibre, Marker, RasterLayer, RasterTileSource, type LngLatLike } from "svelte-maplibre"
   import Legend from "./Legend.svelte"
   import NodeMarker from "./NodeMarker.svelte"
-  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/actions"
+  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
   import maplibregl from "maplibre-gl"
   import { onMount } from "svelte"
 
@@ -20,7 +20,7 @@
   }
 
   function handleKeyboardShortcuts(event: KeyboardEvent) {
-    if (event.key === "a") {
+    if (event.key === "i") {
       satelliteImagery = !satelliteImagery
     }
   }

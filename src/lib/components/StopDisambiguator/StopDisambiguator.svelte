@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/actions"
+  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { recommendDisambiguationActions, type DisambiguationRecommendations } from "$lib/pipeline/disambiguator/recommended-actions"
   import { createEventDispatcher } from "svelte"
@@ -9,19 +9,22 @@
   import TagsTable from "./TagsTable.svelte"
 
   export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
+  export let canUndo: boolean
+  export let initialActions: DisambiguationAction[] | undefined
 
-  let recommendations: DisambiguationRecommendations | null = null
   let selectedActions: DisambiguationAction[] = [ ]
+  let recommendations: DisambiguationRecommendations | null = null
 
   let showKeyboardShortcuts = false
 
   const dispatch = createEventDispatcher<{
-    submit: DisambiguationAction[]
+    submit: DisambiguationAction[],
+    undo: void
   }>()
 
   function getRecommendations() {
     recommendations = recommendDisambiguationActions(matchedStop)
-    selectedActions = recommendations?.actions ?? matchedStop.match.elements.map(() => "ignore")
+    selectedActions = initialActions ?? recommendations?.actions ?? matchedStop.match.elements.map(() => "ignore")
   }
 
   function submitActions() {
@@ -31,6 +34,10 @@
     }
 
     dispatch("submit", selectedActions)
+  }
+
+  function undoActions() {
+    dispatch("undo")
   }
 
   function cycleAction(index: number) {
@@ -50,8 +57,10 @@
     if (e.key >= "1" && e.key <= "9") {
       const index = parseInt(e.key) - 1
       cycleAction(index)
-    } else if (e.key === "Enter" || e.key === "s") {
+    } else if (e.key === "d" || e.key === "ArrowRight") {
       submitActions()
+    } else if (e.key === "a" || e.key === "ArrowLeft") {
+      undoActions()
     }
   }
 
@@ -101,9 +110,14 @@
         </p>
       {/if}
 
-      <button class="submit" on:click={submitActions}>
-        Next
-      </button>
+      <div class="buttons">
+        <button disabled={!canUndo} on:click={undoActions}>
+          Undo
+        </button>
+        <button class="submit" on:click={submitActions}>
+          Submit
+        </button>
+      </div>
 
       <slot name="controls" />
     </div>
@@ -125,13 +139,16 @@
 
   <ul style="padding-left: 1.5em">
     <li>
-      <strong><kbd>A</kbd></strong>: Toggle aerial imagery
+      <kbd>I</kbd> &mdash; Toggle aerial imagery
     </li>
     <li>
-      <strong><kbd>1-9</kbd></strong>: Cycle through the actions for the corresponding option
+      <kbd>1-9</kbd> &mdash; Cycle through the actions for the corresponding option
     </li>
     <li>
-      <strong><kbd>Enter</kbd> or <kbd>S</kbd></strong>: Submit the selected actions and go to next stop
+      <kbd>→</kbd> or <kbd>D</kbd> &mdash; Submit the selected actions and go to next stop
+    </li>
+    <li>
+      <kbd>←</kbd> or <kbd>A</kbd> &mdash; Undo the previous actions and go to previous stop
     </li>
   </ul>
 
@@ -140,7 +157,7 @@
   </p>
 </Modal>
 
-<svelte:window on:keydown={handleKeyboardShortcuts} on:beforeunload|preventDefault />
+<svelte:window on:keydown={handleKeyboardShortcuts} />
 
 <style>
   .tags {
@@ -183,13 +200,38 @@
     margin: 0;
   }
 
-  .info .controls button.submit {
+  .info .controls button {
     font-size: 1.5em;
-    padding: 0.5rem;
-    background-color: #007bff;
+    padding: 0.5rem 3rem;
     color: white;
+    background: #6c757d;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+  }
+
+  .info .controls button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .info .controls button.submit {
+    background-color: #007bff;
+    flex: 1;
+  }
+
+  .info .controls .buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  kbd {
+    font-family: monospace;
+    background: #f8f9fa;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.1em 0.3em;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    font-weight: bold;
   }
 </style>

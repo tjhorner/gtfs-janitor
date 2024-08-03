@@ -1,4 +1,4 @@
-import type { DisambiguationAction } from "./actions"
+import type { DisambiguationAction } from "./session"
 import type { MatchedBusStop } from "../matcher/bus-stops"
 import { averageDistance, calculateDistanceMeters } from "$lib/util/geo-math"
 import { matchByIdStrategy } from "../matcher/bus-stops/strategies/by-id"

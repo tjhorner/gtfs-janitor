@@ -1,82 +1,60 @@
 <script lang="ts">
+  import { applyDisambiguationActions, startDisambiguationSession, undoDisambiguationActions, type DisambiguationAction, type DisambiguationResults, type DisambiguationSession } from "$lib/pipeline/disambiguator/session"
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
-  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/actions"
+  import type { Immutable } from "immer"
   import { createEventDispatcher, onMount } from "svelte"
   import StopDisambiguator from "./StopDisambiguator/StopDisambiguator.svelte"
-  import { getOsmChangeContext } from "$lib/context/osmchange"
+  import { saveDisambiguationSession } from "$lib/pipeline/disambiguator/storage"
 
-  export let matches: MatchedBusStop[]
+  export let matchedStops: MatchedBusStop[] | undefined = undefined
+  export let initialSession: DisambiguationSession | undefined = undefined
+  
+  const dispatch = createEventDispatcher<{ done: Immutable<DisambiguationResults> }>()
 
-  const dispatch = createEventDispatcher<{ done: void }>()
-
-  const osmChange = getOsmChangeContext()
-
+  let initialActions: DisambiguationAction[] | undefined
+  let session = startOrRestoreSession()
   let currentMatchIndex = -1
 
-  function goToNextAmbiguousMatch() {
-    const nextAmbiguousMatch = matches.findIndex(({ match }) => match?.ambiguous)
+  function startOrRestoreSession() {
+    if (initialSession) return initialSession
+
+    const newSession = startDisambiguationSession(matchedStops ?? [ ])
+    saveDisambiguationSession(newSession)
+    return newSession
+  }
+
+  function goToNextAmbiguousMatch(withInitialActions?: DisambiguationAction[]) {
+    const nextAmbiguousMatch = session.results.matches.findIndex(({ match }) => match?.ambiguous)
     if (nextAmbiguousMatch !== -1) {
       currentMatchIndex = nextAmbiguousMatch
+      initialActions = withInitialActions
       return
     }
 
-    dispatch("done")
+    dispatch("done", session.results)
   }
 
-  // Remove an acted-upon node from the remaining matches
-  // and automatically match the remaining node if there's
-  // only one left
-  function removeNodeFromMatches(nodeId: number) {
-    for (const matchedStop of matches) {
-      const match = matchedStop.match
-      if (!match?.ambiguous) continue
-
-      const nodeIndex = match.elements.findIndex(el => el.id === nodeId)
-      if (nodeIndex !== -1) {
-        match.elements.splice(nodeIndex, 1)
-      }
-
-      if (match.elements.length === 1) {
-        matchedStop.match = {
-          ambiguous: false,
-          matchedBy: "human",
-          element: match.elements[0]
-        }
-      }
-    }
-  }
-
-  function handleActions(event: CustomEvent<DisambiguationAction[]>) {
-    const actions = event.detail
-    const matchCandidates = currentMatch.match.elements
-
-    const matchedCandidateIndex = actions.findIndex(action => action === "match")
-    if (matchedCandidateIndex !== -1) {
-      const matchedCandidate = matchCandidates[matchedCandidateIndex]
-      matches[currentMatchIndex].match = {
-        ambiguous: false,
-        matchedBy: "human",
-        element: matchedCandidate
-      }
-    } else {
-      matches[currentMatchIndex].match = null
-    }
-
-    actions.forEach((action, index) => {
-      if (action === "delete") {
-        osmChange.deleteElement(matchCandidates[index])
-      }
-
-      if (action !== "ignore") {
-        removeNodeFromMatches(matchCandidates[index].id)
-      }
-    })
-
+  function handleActions(e: CustomEvent<DisambiguationAction[]>) {
+    updateSession(applyDisambiguationActions(session, currentMatchIndex, e.detail))
     goToNextAmbiguousMatch()
   }
 
-  $: currentMatch = matches[currentMatchIndex] as MatchedBusStop<AmbiguousBusStopMatch>
-  $: remainingAmbiguousMatches = matches.filter(({ match }) => match?.ambiguous).length
+  function undoActions() {
+    if (session.undoStack.length === 0) return
+
+    const [ newSession, actions ] = undoDisambiguationActions(session)
+    updateSession(newSession)
+
+    goToNextAmbiguousMatch(actions ?? undefined)
+  }
+
+  function updateSession(newSession: DisambiguationSession) {
+    session = newSession
+    saveDisambiguationSession(session)
+  }
+
+  $: currentMatch = session.results.matches[currentMatchIndex] as MatchedBusStop<AmbiguousBusStopMatch>
+  $: remainingAmbiguousMatches = session.results.matches.filter(({ match }) => match?.ambiguous).length
 
   onMount(goToNextAmbiguousMatch)
 </script>
@@ -88,9 +66,17 @@
 </style>
 
 {#if currentMatchIndex !== -1}
-  <StopDisambiguator matchedStop={currentMatch} on:submit={handleActions}>
+  <StopDisambiguator
+    {initialActions}
+    canUndo={session.undoStack.length > 0}
+    matchedStop={currentMatch}
+    on:submit={handleActions}
+    on:undo={undoActions}
+  >
     <div class="progress" slot="controls">
       {remainingAmbiguousMatches} ambiguous matches remaining
+      &bull;
+      Your progress is automatically saved
     </div>
   </StopDisambiguator>
 {/if}

@@ -88,10 +88,6 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
       ...tagsForOsmBusStop(stopMatch.stop)
     }
 
-    if (modifiedNode.tags["disused:highway"]) {
-      console.log(modifiedNode)
-    }
-
     delete modifiedNode.tags["disused:highway"]
     osmChange.modifyElement(modifiedNode)
   }

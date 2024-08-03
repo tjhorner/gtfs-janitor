@@ -1,8 +1,14 @@
 <script lang="ts">
+  import { createEventDispatcher } from "svelte"
   import { fade, scale } from "svelte/transition"
   export let shown = false
 
-  function hide() { shown = false }
+  const dispatch = createEventDispatcher<{ hide: void }>()
+
+  function hide() {
+    shown = false
+    dispatch("hide")
+  }
 </script>
 
 <style>
@@ -28,6 +34,7 @@
     border-radius: 0.5rem;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     gap: 10px;
+    max-width: 500px;
   }
 
   .close-button {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/actions"
+  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
   import type { AmbiguousBusStopMatch } from "$lib/pipeline/matcher/bus-stops"
   import SegmentedControl from "../SegmentedControl.svelte"
   import { getColor } from "./colors"

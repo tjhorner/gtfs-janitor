@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/actions"
+  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
   import { getColor } from "./colors"
 
   export let type: "candidate" | "gtfs"
