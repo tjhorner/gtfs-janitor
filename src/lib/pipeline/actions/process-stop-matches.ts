@@ -23,9 +23,6 @@ function tagsForOsmBusStop(stop: GTFSStop) {
   return {
     "highway": "bus_stop",
     "bus": "yes",
-    // TODO: Conditionally apply `public_transport=platform` based on
-    // whether there is a separately mapped platform
-    // "public_transport": "platform",
     "name": sanitizedName,
     "ref": stop.stop_code,
     "network": "King County Metro",
@@ -44,7 +41,12 @@ function tagsForOsmBusStop(stop: GTFSStop) {
   }
 }
 
-export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: OsmChangeFile) {
+export interface ProcessStopMatchesOptions {
+  createNodes?: boolean
+  updateNodes?: boolean
+}
+
+export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: OsmChangeFile, options: ProcessStopMatchesOptions = { }) {
   for (const stopMatch of stopMatches) {
     if (stopMatch.match?.ambiguous) {
       console.warn(`Ambiguous match for stop ${stopMatch.stop.stop_id}: ${stopMatch.match.matchedBy}`)
@@ -52,6 +54,8 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
     }
 
     if (stopMatch.match === null) {
+      if (!options.createNodes) continue
+
       const newNode: Node = {
         type: "node",
         id: -stopMatch.stop.stop_id,
@@ -69,6 +73,8 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
       continue
     }
 
+    if (!options.updateNodes) continue
+
     const modifiedNode: Node = structuredClone(stopMatch.match.element)
 
     const distanceFromExistingNode = calculateDistanceMeters(
@@ -78,7 +84,7 @@ export function processStopMatches(stopMatches: MatchedBusStop[], osmChange: Osm
       stopMatch.match.element.lon
     )
 
-    if (distanceFromExistingNode > 30) {
+    if (distanceFromExistingNode > 100) {
       modifiedNode.lat = stopMatch.stop.stop_lat
       modifiedNode.lon = stopMatch.stop.stop_lon
     }

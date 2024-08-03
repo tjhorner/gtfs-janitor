@@ -16,6 +16,14 @@ export interface AmbiguousBusStopMatch<T extends string = string> {
   elements: Readonly<Node>[]
 }
 
+export function isAmbiguousMatch<T extends string>(match: BusStopMatch<T> | null): match is AmbiguousBusStopMatch<T> {
+  return !!match && match.ambiguous
+}
+
+export function isDefiniteMatch<T extends string>(match: BusStopMatch<T> | null): match is DefiniteBusStopMatch<T> {
+  return !!match && !match.ambiguous
+}
+
 export type BusStopMatch<T extends string = string> = DefiniteBusStopMatch<T> | AmbiguousBusStopMatch<T>
 
 export type BusStopMatchingStrategy<T> = {

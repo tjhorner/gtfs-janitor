@@ -5,20 +5,15 @@
   import GtfsUpload from "$lib/components/GtfsUpload.svelte"
   import MultipleStopsDisambiguator from "$lib/components/MultipleStopsDisambiguator.svelte"
   import StopMatcher from "$lib/components/StopMatcher.svelte"
-  import { OsmChangeFile } from "$lib/osm/osmchange"
-  import { processStopMatches } from "$lib/pipeline/actions/process-stop-matches"
-  import Center from "$lib/components/Center.svelte"
-  import { applyDisambiguationResults, type DisambiguationResults, type DisambiguationSession } from "$lib/pipeline/disambiguator/session"
-  import { onMount } from "svelte"
-  import { clearDisambiguationSession, loadDisambiguationSession } from "$lib/pipeline/disambiguator/storage"
+  import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
   import Modal from "$lib/components/Modal.svelte"
+  import OsmChangeGenerator from "$lib/components/OsmChangeGenerator.svelte"
+  import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
 
   let gtfsData: Readonly<GTFSData> | undefined
   let matchedStops: MatchedBusStop[] = [ ]
   let step: "upload" | "match" | "disambiguate" | "process" | "export" = "upload"
-  let savedSession: DisambiguationSession | undefined
-
-  let osmChange = new OsmChangeFile()
+  let disambiguationResults: Draft<DisambiguationResults> | undefined
 
   function handleGtfsData(event: CustomEvent<GTFSData>) {
     gtfsData = Object.freeze(event.detail)
@@ -31,52 +26,29 @@
   }
 
   function onDisambiguationComplete(event: CustomEvent<DisambiguationResults>) {
-    const results = event.detail as Draft<DisambiguationResults>
-
-    step = "process"
-    applyDisambiguationResults(results, osmChange)
-    processStopMatches(results.matches, osmChange)
+    disambiguationResults = event.detail as Draft<DisambiguationResults>
     step = "export"
   }
 
-  function downloadChangeFile() {
-    const file = new Blob([osmChange.generate()], { type: "application/xml" })
-    const url = URL.createObjectURL(file)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "bus-stops.osc"
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
   function restoreSession() {
-    if (savedSession) {
+    if ($savedDisambiguationSession) {
       step = "disambiguate"
     }
   }
 
   function discardSession() {
-    savedSession = undefined
-    clearDisambiguationSession()
+    savedDisambiguationSession.set(null)
   }
-
-  onMount(async () => {
-    const maybeSavedSession = await loadDisambiguationSession()
-    if (maybeSavedSession) {
-      savedSession = maybeSavedSession
-    }
-  })
 </script>
 
 <Modal
-  shown={step === "upload" && !!savedSession}
+  shown={step === "upload" && !!$savedDisambiguationSession}
   on:hide={discardSession}
 >
   <h2>Saved Session</h2>
 
   <p>
-    A session you were previously working on has been saved. Would
-    you like to restore it?
+    We found a saved session. Would you like to continue working on it?
   </p>
 
   <div>
@@ -92,30 +64,8 @@
 {:else if step === "disambiguate"}
   <MultipleStopsDisambiguator
     {matchedStops}
-    initialSession={savedSession}
     on:done={onDisambiguationComplete}
   />
-{:else if step === "process"}
-  Processing matched bus stops...
-{:else if step === "export"}
-  <Center>
-    <h1>Import Summary</h1>
-
-    <p>
-      Successfully processed all bus stops and merged them with
-      existing OpenStreetMap data. Here is a summary of the changes that will be made:
-    </p>
-
-    <ul>
-      <li>{osmChange.additions.length} nodes will be added</li>
-      <li>{osmChange.modifications.length} nodes will be modified</li>
-      <li>{osmChange.deletions.length} nodes will be removed</li>
-    </ul>
-
-    <p>
-      You can download the resulting osmChange file to open in another editor for further review.
-    </p>
-
-    <button on:click={downloadChangeFile}>Download</button>
-  </Center>
+{:else if step === "export" && disambiguationResults}
+  <OsmChangeGenerator results={disambiguationResults} />
 {/if}

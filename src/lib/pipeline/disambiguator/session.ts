@@ -1,7 +1,6 @@
 import type { OverpassElement } from "$lib/osm/overpass"
 import { applyPatches, produceWithPatches, type Immutable, type Patch, type WritableDraft } from "immer"
 import type { MatchedBusStop } from "../matcher/bus-stops"
-import type { OsmChangeFile } from "$lib/osm/osmchange"
 
 export type DisambiguationAction = "ignore" | "match" | "delete"
 
@@ -101,10 +100,4 @@ export function undoDisambiguationActions(session: DisambiguationSession): [ Dis
 
   session.results = applyPatches(session.results, lastAction.patches)
   return [ session, lastAction.actions ]
-}
-
-export function applyDisambiguationResults(results: DisambiguationResults, osmChange: OsmChangeFile) {
-  for (const deletion of results.deletions) {
-    osmChange.deleteElement(deletion as OverpassElement)
-  }
 }

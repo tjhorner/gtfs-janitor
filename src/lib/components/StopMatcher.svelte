@@ -9,6 +9,7 @@
   import { createEventDispatcher, onMount } from "svelte"
   import BusStopMatchWorker from "$lib/workers/match-bus-stops?worker"
   import Center from "./Center.svelte"
+  import { stopCandidates } from "$lib/stores/stop-candidates"
 
   export let gtfsData: GTFSData
 
@@ -46,6 +47,8 @@
       .filter(isNode)
       .filter(isKingCountyBusStop)
 
+    $stopCandidates = candidateNodes
+
     const worker = new BusStopMatchWorker()
     worker.onmessage = handleWorkerMessage
 
@@ -70,7 +73,7 @@
 <Center>
   {#if step === "confirm"}
     <p>
-      Found {new Intl.NumberFormat(undefined).format(gtfsData.stops.length)} bus stops from GTFS data. Continue?
+      Found {gtfsData.stops.length.toLocaleString()} bus stops from GTFS data. Continue?
     </p>
 
     <div>

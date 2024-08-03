@@ -4,10 +4,9 @@
   import type { Immutable } from "immer"
   import { createEventDispatcher, onMount } from "svelte"
   import StopDisambiguator from "./StopDisambiguator/StopDisambiguator.svelte"
-  import { saveDisambiguationSession } from "$lib/pipeline/disambiguator/storage"
+  import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
 
   export let matchedStops: MatchedBusStop[] | undefined = undefined
-  export let initialSession: DisambiguationSession | undefined = undefined
   
   const dispatch = createEventDispatcher<{ done: Immutable<DisambiguationResults> }>()
 
@@ -16,10 +15,10 @@
   let currentMatchIndex = -1
 
   function startOrRestoreSession() {
-    if (initialSession) return initialSession
+    if ($savedDisambiguationSession) return $savedDisambiguationSession
 
     const newSession = startDisambiguationSession(matchedStops ?? [ ])
-    saveDisambiguationSession(newSession)
+    savedDisambiguationSession.set(newSession)
     return newSession
   }
 
@@ -50,7 +49,7 @@
 
   function updateSession(newSession: DisambiguationSession) {
     session = newSession
-    saveDisambiguationSession(session)
+    savedDisambiguationSession.set(session)
   }
 
   $: currentMatch = session.results.matches[currentMatchIndex] as MatchedBusStop<AmbiguousBusStopMatch>

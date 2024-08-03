@@ -34,7 +34,7 @@
     border-radius: 0.5rem;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     gap: 10px;
-    max-width: 500px;
+    max-width: 600px;
   }
 
   .close-button {
