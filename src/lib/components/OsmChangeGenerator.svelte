@@ -8,7 +8,8 @@
   import { stopCandidates } from "$lib/stores/stop-candidates"
   import { applyDisambiguationResults } from "$lib/pipeline/actions/apply-disambiguation-results"
   import { importProfile } from "$lib/stores/import-profile"
-  import jsonata from "jsonata"
+  import { jsonataFilter } from "$lib/util/jsonata-filter"
+  import memoize from "memoize"
 
   export let results: Draft<DisambiguationResults>
 
@@ -21,31 +22,39 @@
 
   let osmChangeFile: OsmChangeFile | undefined
 
-  async function regenerateWithOptions() {
+  const generateOsmChangeFile = memoize(async (opts: typeof options) => {
     const file = new OsmChangeFile()
 
-    if (options.removeStagedForDeletion) {
+    if (opts.removeStagedForDeletion) {
       applyDisambiguationResults(results, file)
     }
 
     processStopMatches(results.matches, file, {
-      createNodes: options.createNewStops,
-      updateNodes: options.updateExistingStops,
+      createNodes: opts.createNewStops,
+      updateNodes: opts.updateExistingStops,
       additionalTags: $importProfile?.stopTags ?? { }
     })
 
-    if (options.removeOldStops) {
+    if (opts.removeOldStops) {
       const candidates = await disusedStopCandidates
       removeOldStops(results.matches, candidates, file)
     }
 
-    osmChangeFile = file
+    return file
+  }, {
+    cacheKey: (opts) => JSON.stringify(opts)
+  })
+
+  async function regenerateWithOptions() {
+    osmChangeFile = await generateOsmChangeFile(options)
   }
 
   async function getDisusedStopCandidates() {
+    if (!$stopCandidates) return [ ]
     if (!$importProfile?.disusedStopFilter) return $stopCandidates
-    const filter = jsonata(`$filter($,function($v,$i,$a){${$importProfile.disusedStopFilter}})`)
-    return await filter.evaluate($stopCandidates)
+
+    const filter = jsonataFilter($importProfile.disusedStopFilter)
+    return await filter($stopCandidates)
   }
 
   function exportFile() {

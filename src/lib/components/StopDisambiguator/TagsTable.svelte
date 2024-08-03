@@ -45,11 +45,16 @@
   th {
     background-color: #f2f2f2;
   }
+
+  .sticky-left {
+    position: sticky;
+    left: 0;
+  }
 </style>
 
 <table>
   <tr>
-    <th>Key</th>
+    <th class="sticky-left">Key</th>
     {#each match.elements as element, index}
       <th style={`background-color: ${getColor(index)}`}>
         Option {index + 1}:
@@ -59,7 +64,7 @@
   </tr>
   {#each allTagKeys as key}
     <tr>
-      <th class="key">{key}</th>
+      <th class="key sticky-left">{key}</th>
       {#each match.elements as element}
         <td>{element.tags[key] ?? ""}</td>
       {/each}

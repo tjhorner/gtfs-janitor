@@ -2,7 +2,7 @@
 
 ![screenshot of UI](https://github.com/user-attachments/assets/870c497d-c493-42ba-a6f2-6c5269918334)
 
-This is a web-based tool for syncing GTFS feeds with OpenStreetMap data. It performs matching of GTFS stops to nodes in OSM and assists users in resolving ambiguous matches. After import, it will provide an osmChange file that can be reviewed in an external editor.
+This is a web-based tool for syncing GTFS feeds with OpenStreetMap data. It performs [conflation](https://wiki.openstreetmap.org/wiki/Conflation) of GTFS stops and nodes in OSM, then assists users in resolving ambiguous matches. After import, it will provide an osmChange file that can be reviewed in an external editor.
 
 You can configure it to work with your transit agency's GTFS feed by writing an import profile. You can learn more about import profiles in [the documentation](docs/import-profile.md).
 

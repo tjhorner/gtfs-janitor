@@ -5,6 +5,22 @@ export interface ImportProfile {
   stopTags: { [key: string]: string }
 }
 
+export async function parseProfile(content: string): Promise<ImportProfile> {
+  let parsedConfig
+  try {
+    parsedConfig = JSON.parse(content)
+  } catch (e) {
+    console.log("Failed to parse JSON config, trying YAML")
+  }
+
+  if (!parsedConfig) {
+    const { parse } = await import("yaml")
+    parsedConfig = parse(content)
+  }
+
+  return validateImportProfile(parsedConfig)
+}
+
 export async function fetchImportProfile(url: string): Promise<ImportProfile> {
   const response = await fetch(url)
   if (!response.ok) {
@@ -12,20 +28,7 @@ export async function fetchImportProfile(url: string): Promise<ImportProfile> {
   }
 
   const config = await response.text()
-
-  let parsedConfig
-  try {
-    parsedConfig = JSON.parse(config)
-  } catch (e) {
-    console.log("Failed to parse JSON config, trying YAML")
-  }
-
-  if (!parsedConfig) {
-    const { parse } = await import("yaml")
-    parsedConfig = parse(config)
-  }
-
-  return validateImportProfile(parsedConfig)
+  return parseProfile(config)
 }
 
 export function validateImportProfile(config: any): ImportProfile {

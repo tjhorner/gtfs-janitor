@@ -3,7 +3,7 @@ import type { OsmChangeFile } from "$lib/osm/osmchange"
 import type { Node } from "$lib/osm/overpass"
 import type { MatchedBusStop } from "../matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
-import Mustache from "mustache"
+import nunjucks from "nunjucks"
 
 function getWheelchairTag(wheelchairBoarding: string) {
   switch (wheelchairBoarding) {
@@ -15,6 +15,14 @@ function getWheelchairTag(wheelchairBoarding: string) {
     default:
       return undefined
   }
+}
+
+function preCompileTagTemplates(tags: { [key: string]: string }): [ string, nunjucks.Template | string ][] {
+  nunjucks.configure({ autoescape: false })
+  return Object.entries(tags).map(([key, value]) => {
+    const isTemplate = value.includes("{{") || value.includes("{%")
+    return isTemplate ? [ key, nunjucks.compile(value) ] : [ key, value ]
+  })
 }
 
 function tagsForOsmBusStop(stop: GTFSStop) {
@@ -32,12 +40,13 @@ function tagsForOsmBusStop(stop: GTFSStop) {
   }
 }
 
-function renderAdditionalTags(stop: GTFSStop, tags: { [key: string]: string }) {
-  return Object.fromEntries(
-    Object.entries(tags).map(([key, value]) => {
-      return [key, Mustache.render(value, stop)]
-    })
-  )
+function renderAdditionalTags(stop: GTFSStop, tags: [ string, nunjucks.Template | string ][]) {
+  return tags.reduce((acc, [ key, template ]) => {
+    return {
+      ...acc,
+      [key]: typeof template === "string" ? template : template.render(stop)
+    }
+  }, { })
 }
 
 export interface ProcessStopMatchesOptions {
@@ -51,6 +60,8 @@ export function processStopMatches(
   osmChange: OsmChangeFile,
   options: ProcessStopMatchesOptions = { }
 ) {
+  const compiledTags = preCompileTagTemplates(options.additionalTags ?? { })
+
   for (const stopMatch of stopMatches) {
     if (stopMatch.match?.ambiguous) {
       console.warn(`Ambiguous match for stop ${stopMatch.stop.stop_id}: ${stopMatch.match.matchedBy}`)
@@ -69,8 +80,8 @@ export function processStopMatches(
         version: 1,
         tags: {
           ...tagsForOsmBusStop(stopMatch.stop),
-          ...renderAdditionalTags(stopMatch.stop, options.additionalTags ?? { }),
-          "public_transport": "platform"
+          "public_transport": "platform",
+          ...renderAdditionalTags(stopMatch.stop, compiledTags)
         }
       }
 
@@ -97,7 +108,7 @@ export function processStopMatches(
     modifiedNode.tags = {
       ...modifiedNode.tags,
       ...tagsForOsmBusStop(stopMatch.stop),
-      ...renderAdditionalTags(stopMatch.stop, options.additionalTags ?? { })
+      ...renderAdditionalTags(stopMatch.stop, compiledTags)
     }
 
     delete modifiedNode.tags["disused:highway"]
