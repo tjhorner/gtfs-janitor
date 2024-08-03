@@ -61,4 +61,4 @@
   </div>
 {/if}
 
-<svelte:window on:keydown={e => e.key === "Escape" && (shown = false)} />
+<svelte:window on:keydown={e => e.key === "Escape" && hide()} />
