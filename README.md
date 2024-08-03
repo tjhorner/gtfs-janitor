@@ -1,6 +1,6 @@
 # GTFS Janitor
 
-![screenshot of UI](https://github.com/user-attachments/assets/afabf1bd-ba7f-47b7-9231-d096fe9b1a36)
+![screenshot of UI](https://github.com/user-attachments/assets/870c497d-c493-42ba-a6f2-6c5269918334)
 
 This is a web-based tool for syncing GTFS feeds with OpenStreetMap data. It performs matching of GTFS stops to nodes in OSM and assists users in resolving ambiguous matches. After import, it will provide an osmChange file that can be reviewed in an external editor.
 
