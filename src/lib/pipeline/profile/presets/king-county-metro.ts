@@ -24,11 +24,6 @@ export const kcmProfile: ImportProfile = {
   `$contains($v.tags.operator, "King County Metro") or
   $contains($v.tags.network, "King County Metro")`,
   stopTags: {
-    "bus": "yes",
-    "network": "King County Metro",
-    "network:short": "KCM",
-    "network:wikidata": "Q6411393",
-    "network:wikipedia": "en:King County Metro",
     "operator": "King County Metro",
     "operator:short": "KCM",
     "operator:wikidata": "Q6411393",
