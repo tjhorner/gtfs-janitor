@@ -59,8 +59,6 @@
       candidateNodes = await filter(allNodes)
     }
 
-    console.log(candidateNodes)
-
     $stopCandidates = candidateNodes
 
     const worker = new BusStopMatchWorker()

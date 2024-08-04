@@ -15,7 +15,6 @@
     loading = true
 
     const gtfsData = await readGtfsZip(currentTarget.files![0])
-    console.log(gtfsData)
     dispatch("gtfsData", gtfsData)
 
     loading = false
