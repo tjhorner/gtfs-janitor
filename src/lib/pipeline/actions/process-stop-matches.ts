@@ -1,9 +1,9 @@
 import type { GTFSStop } from "$lib/gtfs/parser"
 import type { OsmChangeFile } from "$lib/osm/osmchange"
 import type { Node } from "$lib/osm/overpass"
-import type { MatchedBusStop } from "../matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
 import nunjucks from "nunjucks"
+import type { MatchedBusStop } from "../matcher/bus-stops"
 
 function getWheelchairTag(wheelchairBoarding: string) {
   switch (wheelchairBoarding) {

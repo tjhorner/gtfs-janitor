@@ -1,10 +1,10 @@
 <script lang="ts">
   import { applyDisambiguationActions, startDisambiguationSession, undoDisambiguationActions, type DisambiguationAction, type DisambiguationResults, type DisambiguationSession } from "$lib/pipeline/disambiguator/session"
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
+  import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
   import type { Immutable } from "immer"
   import { createEventDispatcher, onMount } from "svelte"
   import StopDisambiguator from "./StopDisambiguator/StopDisambiguator.svelte"
-  import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
 
   export let matchedStops: MatchedBusStop[] | undefined = undefined
   

@@ -1,16 +1,16 @@
 <script lang="ts">
-  import type { GTFSData } from "$lib/gtfs/parser"
-  import type { MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
-  import type { Draft } from "immer"
   import GtfsUpload from "$lib/components/GtfsUpload.svelte"
-  import MultipleStopsDisambiguator from "$lib/components/MultipleStopsDisambiguator.svelte"
-  import StopMatcher from "$lib/components/StopMatcher.svelte"
-  import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
   import Modal from "$lib/components/Modal.svelte"
+  import MultipleStopsDisambiguator from "$lib/components/MultipleStopsDisambiguator.svelte"
   import OsmChangeGenerator from "$lib/components/OsmChangeGenerator.svelte"
-  import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
   import ProfileChooser from "$lib/components/ProfileChooser.svelte"
+  import StopMatcher from "$lib/components/StopMatcher.svelte"
+  import type { GTFSData } from "$lib/gtfs/parser"
+  import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
+  import type { MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
+  import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
   import { importProfile } from "$lib/stores/import-profile"
+  import type { Draft } from "immer"
   
   let gtfsData: Readonly<GTFSData> | undefined
   let matchedStops: MatchedBusStop[] = [ ]

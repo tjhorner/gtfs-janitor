@@ -3,14 +3,14 @@
   import { isNode } from "$lib/osm/overpass"
   import { getBusElementsInBbox } from "$lib/osm/query"
   import { type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
-  import { getStopsBoundingBox } from "$lib/util/geo-math"
-  import type { MatchBusStopsRequest } from "$lib/workers/match-bus-stops"
-  import { createEventDispatcher, onMount } from "svelte"
-  import BusStopMatchWorker from "$lib/workers/match-bus-stops?worker"
-  import Center from "./Center.svelte"
-  import { stopCandidates } from "$lib/stores/stop-candidates"
   import { importProfile } from "$lib/stores/import-profile"
+  import { stopCandidates } from "$lib/stores/stop-candidates"
+  import { getStopsBoundingBox } from "$lib/util/geo-math"
   import { jsonataFilter } from "$lib/util/jsonata-filter"
+  import type { MatchBusStopsRequest } from "$lib/workers/match-bus-stops"
+  import BusStopMatchWorker from "$lib/workers/match-bus-stops?worker"
+  import { createEventDispatcher, onMount } from "svelte"
+  import Center from "./Center.svelte"
 
   export let gtfsData: GTFSData
 

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { readGtfsZip, type GTFSData } from "$lib/gtfs/parser"
+  import { importProfile } from "$lib/stores/import-profile"
   import { createEventDispatcher } from "svelte"
   import Center from "./Center.svelte"
-  import { importProfile } from "$lib/stores/import-profile"
 
   const dispatch = createEventDispatcher<{
     gtfsData: GTFSData

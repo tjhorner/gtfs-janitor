@@ -1,11 +1,11 @@
 <script lang="ts">
+  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
+  import maplibregl from "maplibre-gl"
+  import { onMount } from "svelte"
   import { Control, ControlButton, ControlGroup, MapLibre, Marker, RasterLayer, RasterTileSource, type LngLatLike } from "svelte-maplibre"
   import Legend from "./Legend.svelte"
   import NodeMarker from "./NodeMarker.svelte"
-  import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
-  import maplibregl from "maplibre-gl"
-  import { onMount } from "svelte"
 
   export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
   export let selectedActions: DisambiguationAction[]

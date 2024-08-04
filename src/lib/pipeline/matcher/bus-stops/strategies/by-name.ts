@@ -1,6 +1,6 @@
 import type { GTFSStop } from "$lib/gtfs/parser"
-import type { BusStopMatchingStrategy } from "$lib/pipeline/matcher/bus-stops"
 import type { Node } from "$lib/osm/overpass"
+import type { BusStopMatchingStrategy } from "$lib/pipeline/matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
 import memoize from "memoize"
 

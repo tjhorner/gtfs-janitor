@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { recommendDisambiguationActions, type DisambiguationRecommendations } from "$lib/pipeline/disambiguator/recommended-actions"
   import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
-  import { recommendDisambiguationActions, type DisambiguationRecommendations } from "$lib/pipeline/disambiguator/recommended-actions"
   import { createEventDispatcher } from "svelte"
   import LinkButton from "../LinkButton.svelte"
   import Modal from "../Modal.svelte"

@@ -1,15 +1,15 @@
 <script lang="ts">
-  import type { Draft } from "immer"
   import { OsmChangeFile } from "$lib/osm/osmchange"
-  import { processStopMatches } from "$lib/pipeline/actions/process-stop-matches"
-  import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
-  import Center from "./Center.svelte"
-  import { removeOldStops } from "$lib/pipeline/actions/remove-old-stops"
-  import { stopCandidates } from "$lib/stores/stop-candidates"
   import { applyDisambiguationResults } from "$lib/pipeline/actions/apply-disambiguation-results"
+  import { processStopMatches } from "$lib/pipeline/actions/process-stop-matches"
+  import { removeOldStops } from "$lib/pipeline/actions/remove-old-stops"
+  import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
   import { importProfile } from "$lib/stores/import-profile"
+  import { stopCandidates } from "$lib/stores/stop-candidates"
   import { jsonataFilter } from "$lib/util/jsonata-filter"
+  import type { Draft } from "immer"
   import memoize from "memoize"
+  import Center from "./Center.svelte"
 
   export let results: Draft<DisambiguationResults>
 

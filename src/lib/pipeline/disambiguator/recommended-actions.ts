@@ -1,9 +1,9 @@
-import type { DisambiguationAction } from "./session"
-import type { MatchedBusStop } from "../matcher/bus-stops"
 import { averageDistance, calculateDistanceMeters } from "$lib/util/geo-math"
-import { matchByIdStrategy } from "../matcher/bus-stops/strategies/by-id"
+import type { MatchedBusStop } from "../matcher/bus-stops"
 import { matchByDistanceStrategy } from "../matcher/bus-stops/strategies/by-distance"
+import { matchByIdStrategy } from "../matcher/bus-stops/strategies/by-id"
 import { matchByNameStrategy } from "../matcher/bus-stops/strategies/by-name"
+import type { DisambiguationAction } from "./session"
 
 export interface DisambiguationRecommendations {
   summary: string
