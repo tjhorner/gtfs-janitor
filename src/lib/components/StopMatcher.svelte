@@ -5,7 +5,7 @@
   import { type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { importProfile } from "$lib/stores/import-profile"
   import { stopCandidates } from "$lib/stores/stop-candidates"
-  import { getStopsBoundingBox } from "$lib/util/geo-math"
+  import { expandBoundingBox, getStopsBoundingBox } from "$lib/util/geo-math"
   import { jsonataFilter } from "$lib/util/jsonata-filter"
   import type { MatchBusStopsRequest } from "$lib/workers/match-bus-stops"
   import BusStopMatchWorker from "$lib/workers/match-bus-stops?worker"
@@ -38,10 +38,16 @@
   }
 
   async function matchStops() {
-    const bbox = getStopsBoundingBox(gtfsData.stops)
+    // Extend the bounding box by 5km in each direction
+    // so that we catch stops that may have moved or are
+    // out of service
+    const bbox = expandBoundingBox(
+      getStopsBoundingBox(gtfsData.stops),
+      5000 // 5km
+    )
 
     step = "downloadOsmData"
-    const osmData = await getBusElementsInBbox(bbox)
+    const osmData = await getBusElementsInBbox(`${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`)
 
     step = "matchStops"
 
