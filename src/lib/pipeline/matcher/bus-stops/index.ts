@@ -1,4 +1,4 @@
-import type { GTFSStop } from "$lib/gtfs/parser"
+import type { GTFSStop } from "$lib/gtfs/types"
 import type { Node } from "../../../osm/overpass"
 import { matchByDistanceStrategy } from "./strategies/by-distance"
 import { matchByIdStrategy } from "./strategies/by-id"

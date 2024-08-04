@@ -1,4 +1,4 @@
-import type { GTFSStop } from "$lib/gtfs/parser"
+import type { GTFSStop } from "$lib/gtfs/types"
 import type { Node } from "$lib/osm/overpass"
 import type { BusStopMatchingStrategy, MatchingStrategyResult } from "$lib/pipeline/matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"

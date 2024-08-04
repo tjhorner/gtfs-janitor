@@ -1,4 +1,4 @@
-import type { GTFSStop } from "$lib/gtfs/parser"
+import type { GTFSStop } from "$lib/gtfs/types"
 import { computeDestinationPoint, getDistance } from "geolib"
 
 export function calculateDistanceMeters(lat1?: number, lon1?: number, lat2?: number, lon2?: number) {

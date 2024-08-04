@@ -29,10 +29,13 @@
 		"geolib": "^3.3.4",
 		"immer": "^10.1.1",
 		"jsonata": "^2.0.5",
+		"just-flush": "^2.3.0",
 		"localforage": "^1.10.0",
 		"memoize": "^10.0.0",
+		"natural-orderby": "^3.0.2",
 		"nunjucks": "^3.2.4",
 		"p-mutex": "^0.1.0",
+		"readable-web-to-node-stream": "^3.0.2",
 		"svelte-maplibre": "^0.9.9",
 		"xml": "^1.0.1",
 		"yaml": "^2.5.0"

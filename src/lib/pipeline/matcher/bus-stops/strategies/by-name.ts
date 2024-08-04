@@ -1,4 +1,4 @@
-import type { GTFSStop } from "$lib/gtfs/parser"
+import type { GTFSStop } from "$lib/gtfs/types"
 import type { Node } from "$lib/osm/overpass"
 import type { BusStopMatchingStrategy, MatchingStrategyResult } from "$lib/pipeline/matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
@@ -48,7 +48,7 @@ export const matchByNameStrategy = {
       .sort((a, b) => a.distance - b.distance)
 
     // If there's a node that's very clearly the same stop, return just that one
-    const incrediblyCloseStops = closeStopsMatchingName.filter(stop => stop.distance < 10)
+    const incrediblyCloseStops = closeStopsMatchingName.filter(stop => stop.distance <= 10)
     if (incrediblyCloseStops.length === 1) {
       return { elements: [ incrediblyCloseStops[0].stop ] }
     }

@@ -5,7 +5,7 @@
   import OsmChangeGenerator from "$lib/components/OsmChangeGenerator.svelte"
   import ProfileChooser from "$lib/components/ProfileChooser.svelte"
   import StopMatcher from "$lib/components/StopMatcher.svelte"
-  import type { GTFSData } from "$lib/gtfs/parser"
+  import type { GTFSData } from "$lib/gtfs/types"
   import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
   import type { MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"

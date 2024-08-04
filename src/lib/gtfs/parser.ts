@@ -1,32 +1,18 @@
-import { BlobReader, TextWriter, ZipReader } from "@zip.js/zip.js"
+import type { GTFSData, GTFSRoute, GTFSStop, GTFSStopTime, GTFSTrip } from "./types"
+import { BlobReader, ZipReader, type Entry } from "@zip.js/zip.js"
+import { ReadableWebToNodeStream } from "readable-web-to-node-stream"
+import { getRoutesServingStopIds } from "./util"
 import csv from "csvtojson/v2"
 
-export interface GTFSStop {
-  stop_id: string
-  stop_code: string
-  stop_name: string
-  stop_desc: string
-  stop_lat: number
-  stop_lon: number
-  zone_id: string
-  stop_url: string
-  location_type: string
-  parent_station: string
-  stop_timezone: string
-  wheelchair_boarding: string
-}
+async function parseEntryAsCsv<T = any>(entries: Entry[], name: string): Promise<T[]> {
+  const entry = entries.find(entry => entry.filename === name)
+  if (!entry) {
+    throw new Error(`No file named ${name} found in GTFS zip`)
+  }
 
-export interface GTFSData {
-  readonly stops: GTFSStop[]
-}
-
-async function parseStops(routesCsv: string): Promise<GTFSStop[]> {
-  const stops = await csv().fromString(routesCsv)
-  return stops.map(stop => ({
-    ...stop,
-    stop_lat: parseFloat(stop.stop_lat),
-    stop_lon: parseFloat(stop.stop_lon)
-  }))
+  const stream = new TransformStream()
+  entry.getData!(stream.writable)
+  return await csv().fromStream(new ReadableWebToNodeStream(stream.readable) as any)
 }
 
 export async function readGtfsZip(blob: Blob): Promise<GTFSData> {
@@ -35,15 +21,20 @@ export async function readGtfsZip(blob: Blob): Promise<GTFSData> {
 
   const entries = await zipReader.getEntries()
 
-  const stopsCsv = entries.find(entry => entry.filename === "stops.txt")
-  if (!stopsCsv) {
-    throw new Error("No stops.txt found in GTFS zip")
-  }
+  const stops = (await parseEntryAsCsv(entries, "stops.txt")).map(stop => ({
+    ...stop,
+    stop_lat: parseFloat(stop.stop_lat),
+    stop_lon: parseFloat(stop.stop_lon)
+  }) as GTFSStop)
 
-  const stopsCsvData = await stopsCsv.getData!(new TextWriter())
-  const stops = await parseStops(stopsCsvData)
+  const stopTimes = await parseEntryAsCsv<GTFSStopTime>(entries, "stop_times.txt")
+  const routes = await parseEntryAsCsv<GTFSRoute>(entries, "routes.txt")
+  const trips = await parseEntryAsCsv<GTFSTrip>(entries, "trips.txt")
 
-  return {
-    stops
-  }
+  const stopIdsToRoutes = getRoutesServingStopIds(trips, routes, stopTimes)
+  stops.forEach(stop => {
+    stop.routesServingStop = Array.from(stopIdsToRoutes.get(stop.stop_id) ?? [])
+  })
+
+  return { stops }
 }

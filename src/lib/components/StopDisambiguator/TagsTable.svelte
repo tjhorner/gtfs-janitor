@@ -31,7 +31,6 @@
   table {
     border-collapse: collapse;
     width: 100%;
-    white-space: nowrap;
   }
 
   tr:not(.actions):hover {

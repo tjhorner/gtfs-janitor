@@ -73,8 +73,7 @@
       <h2>{matchedStop.stop.stop_name} &mdash; <code>{matchedStop.stop.stop_id}</code></h2>
 
       <p>
-        There were multiple possible matches in OpenStreetMap for this stop. Please specify what to do
-        with each of the possible matches.
+        There were no definite matches for this stop on OpenStreetMap. Please review the potential matches below and select the appropriate action for each.
       </p>
 
       <ul>

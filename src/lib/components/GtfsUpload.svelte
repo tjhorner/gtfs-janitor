@@ -1,16 +1,24 @@
 <script lang="ts">
-  import { readGtfsZip, type GTFSData } from "$lib/gtfs/parser"
+  import { readGtfsZip } from "$lib/gtfs/parser"
   import { importProfile } from "$lib/stores/import-profile"
   import { createEventDispatcher } from "svelte"
   import Center from "./Center.svelte"
+  import type { GTFSData } from "$lib/gtfs/types"
 
   const dispatch = createEventDispatcher<{
     gtfsData: GTFSData
   }>()
 
+  let loading = false
+
   async function processUpload({ currentTarget }: { currentTarget: EventTarget & HTMLInputElement }) {
+    loading = true
+
     const gtfsData = await readGtfsZip(currentTarget.files![0])
+    console.log(gtfsData)
     dispatch("gtfsData", gtfsData)
+
+    loading = false
   }
 
   function changeProfile() {
@@ -25,17 +33,23 @@
     Upload a GTFS .zip file to merge bus stop data with OpenStreetMap.
   </p>
 
-  <input
-    type="file"
-    accept=".zip"
-    multiple={false}
-    on:change={processUpload} />
+  {#if loading}
+    <p>
+      Processing GTFS data... (this can take a while)
+    </p>
+  {:else}
+    <input
+      type="file"
+      accept=".zip"
+      multiple={false}
+      on:change={processUpload} />
 
-  <h2>Current Profile</h2>
-  
-  <p>
-    You are currently using the import profile "<strong>{$importProfile?.name}</strong>".
-  </p>
+    <h2>Current Profile</h2>
 
-  <button on:click={changeProfile}>Change Profile</button>
+    <p>
+      You are currently using the import profile "<strong>{$importProfile?.name}</strong>".
+    </p>
+
+    <button on:click={changeProfile}>Change Profile</button>
+  {/if}
 </Center>

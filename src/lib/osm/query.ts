@@ -1,14 +1,20 @@
 import { queryOverpass } from "./overpass"
 
-export async function getBusElementsInBbox(bbox: string) {
+export async function getStopElementsInBbox(bbox: string) {
   const overpassResult = await queryOverpass(`
     [out:json][bbox:${bbox}][timeout:60];
 
-    node[~"^(.+:)?highway$"~"^bus_stop$"]->.busStops;
-    way(bn.busStops)["highway"~"motorway|trunk|primary|secondary|tertiary|unclassified|residential|service"]->.roadWaysWithStops;
+    (
+      node[~"^(.+:)?highway$"~"^bus_stop$"];
+      node[~"^(.+:)?railway$"~"^tram_stop$"];
+      node[~"^(.+:)?amenity$"~"^ferry_terminal$"];
+      node[~"bus|tram|ferry"~"^yes$"];
+    )->.ptStops;
+
+    way(bn.ptStops)["highway"~"motorway|trunk|primary|secondary|tertiary|unclassified|residential|service"]->.roadWaysWithStops;
     node(w.roadWaysWithStops)->.stopsOnRoadWays;
 
-    (.busStops; - .stopsOnRoadWays;);
+    (.ptStops; - .stopsOnRoadWays;);
 
     out meta;
   `)

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { GTFSData } from "$lib/gtfs/parser"
+  import type { GTFSData } from "$lib/gtfs/types"
   import { isNode } from "$lib/osm/overpass"
-  import { getBusElementsInBbox } from "$lib/osm/query"
+  import { getStopElementsInBbox } from "$lib/osm/query"
   import { type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { importProfile } from "$lib/stores/import-profile"
   import { stopCandidates } from "$lib/stores/stop-candidates"
@@ -47,7 +47,7 @@
     )
 
     step = "downloadOsmData"
-    const osmData = await getBusElementsInBbox(`${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`)
+    const osmData = await getStopElementsInBbox(`${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`)
 
     step = "matchStops"
 
@@ -58,6 +58,8 @@
       const filter = jsonataFilter($importProfile.candidateNodeFilter)
       candidateNodes = await filter(allNodes)
     }
+
+    console.log(candidateNodes)
 
     $stopCandidates = candidateNodes
 
