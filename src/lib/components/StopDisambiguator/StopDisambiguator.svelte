@@ -94,7 +94,7 @@
 
     <div class="tags">
       <TagsTable
-        match={matchedStop.match}
+        stopMatch={matchedStop}
         bind:selectedActions={selectedActions}
       />
     </div>

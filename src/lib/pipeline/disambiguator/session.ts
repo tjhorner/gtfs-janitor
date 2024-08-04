@@ -37,7 +37,11 @@ function removeNodeFromMatches(draft: WritableDraft<DisambiguationResults>, node
       match.elements.splice(nodeIndex, 1)
     }
 
-    if (match.elements.length === 1) {
+    if (match.elements.length === 0) {
+      matchedStop.match = null
+    }
+
+    if (!match.alwaysAmbiguous && match.elements.length === 1) {
       matchedStop.match = {
         ambiguous: false,
         matchedBy: "human",

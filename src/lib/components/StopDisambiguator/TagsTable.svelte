@@ -1,12 +1,23 @@
 <script lang="ts">
   import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
-  import type { AmbiguousBusStopMatch } from "$lib/pipeline/matcher/bus-stops"
+  import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
+  import { calculateDistanceMeters } from "$lib/util/geo-math"
   import SegmentedControl from "../SegmentedControl.svelte"
   import { getColor } from "./colors"
 
-  export let match: AmbiguousBusStopMatch
+  export let stopMatch: MatchedBusStop<AmbiguousBusStopMatch>
   export let selectedActions: DisambiguationAction[]
 
+  function formatMeters(meters: number) {
+    return meters.toLocaleString(undefined, {
+      style: "unit",
+      unit: "meter",
+      unitDisplay: "narrow"
+    })
+  }
+
+  $: match = stopMatch.match
+  $: stop = stopMatch.stop
   $: allTagKeys = match.elements.reduce((acc, element) => {
     return acc.union(new Set(Object.keys(element.tags)))
   }, new Set<string>())
@@ -56,9 +67,11 @@
   <tr>
     <th class="sticky-left">Key</th>
     {#each match.elements as element, index}
-      <th style={`background-color: ${getColor(index)}`}>
+      <th style={`background-color: ${getColor(index)}; color: white`}>
         Option {index + 1}:
         <a href={`https://www.openstreetmap.org/${element.type}/${element.id}`} target="_blank">{element.type} {element.id}</a>
+        <br>
+        {formatMeters(calculateDistanceMeters(stop.stop_lat, stop.stop_lon, element.lat, element.lon))} away from stop
       </th>
     {/each}
   </tr>

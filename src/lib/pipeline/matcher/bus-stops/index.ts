@@ -12,6 +12,7 @@ export interface DefiniteBusStopMatch<T> {
 
 export interface AmbiguousBusStopMatch<T extends string = string> {
   ambiguous: true
+  alwaysAmbiguous: boolean
   matchedBy: T
   elements: Readonly<Node>[]
 }
@@ -26,9 +27,14 @@ export function isDefiniteMatch<T extends string>(match: BusStopMatch<T> | null)
 
 export type BusStopMatch<T extends string = string> = DefiniteBusStopMatch<T> | AmbiguousBusStopMatch<T>
 
+export interface MatchingStrategyResult {
+  alwaysAmbiguous?: boolean
+  elements: Node[]
+}
+
 export type BusStopMatchingStrategy<T> = {
   name: T
-  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>) => Node[]
+  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>) => MatchingStrategyResult
 }
 
 export const defaultStrategies = [
@@ -52,21 +58,26 @@ export function matchBusStopWithStrategies<T extends string>(
   strategies: readonly BusStopMatchingStrategy<T>[]
 ): BusStopMatch<T> | null {
   for (const { name, match } of strategies) {
-    const matchedNodes = match(candidates, stopToMatch)
+    const { elements, alwaysAmbiguous } = match(candidates, stopToMatch)
 
-    if (matchedNodes.length === 1) {
+    if (elements.length === 0) {
+      continue
+    }
+
+    if (alwaysAmbiguous || elements.length > 1) {
       return {
-        ambiguous: false,
+        ambiguous: true,
+        alwaysAmbiguous: !!alwaysAmbiguous,
         matchedBy: name,
-        element: matchedNodes[0]
+        elements
       }
     }
 
-    if (matchedNodes.length > 1) {
+    if (elements.length === 1) {
       return {
-        ambiguous: true,
+        ambiguous: false,
         matchedBy: name,
-        elements: matchedNodes
+        element: elements[0]
       }
     }
   }

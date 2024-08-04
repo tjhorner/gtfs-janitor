@@ -1,6 +1,6 @@
 import type { GTFSStop } from "$lib/gtfs/parser"
 import type { Node } from "$lib/osm/overpass"
-import type { BusStopMatchingStrategy } from "$lib/pipeline/matcher/bus-stops"
+import type { BusStopMatchingStrategy, MatchingStrategyResult } from "$lib/pipeline/matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
 import memoize from "memoize"
 
@@ -27,7 +27,7 @@ const normalizeStopName = memoize((name?: string) => {
 
 export const matchByNameStrategy = {
   name: "name",
-  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>): Node[] => {
+  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>): MatchingStrategyResult => {
     const normalizedName = normalizeStopName(stopToMatch.stop_name)
 
     const stopsMatchingName = candidates.filter(node => (
@@ -36,7 +36,7 @@ export const matchByNameStrategy = {
     ))
 
     if (stopsMatchingName.length <= 1) {
-      return stopsMatchingName
+      return { elements: stopsMatchingName }
     }
 
     const closeStopsMatchingName = stopsMatchingName
@@ -50,10 +50,10 @@ export const matchByNameStrategy = {
     // If there's a node that's very clearly the same stop, return just that one
     const incrediblyCloseStops = closeStopsMatchingName.filter(stop => stop.distance < 10)
     if (incrediblyCloseStops.length === 1) {
-      return [ incrediblyCloseStops[0].stop ]
+      return { elements: [ incrediblyCloseStops[0].stop ] }
     }
 
     // ...otherwise, return all the somewhat-close stops for human review
-    return closeStopsMatchingName.map(stop => stop.stop)
+    return { elements: closeStopsMatchingName.map(stop => stop.stop) }
   }
 } satisfies BusStopMatchingStrategy<"name">

@@ -26,7 +26,7 @@ export function recommendDisambiguationActions({ match, stop }: MatchedBusStop):
 
       return {
         summary: "Remove duplicate nodes",
-        reason: "These nodes have identical stop IDs and are very close together; they are likely duplicates. The newest node should be preserved and the others deleted.",
+        reason: "These nodes have identical stop IDs and are very close together; they are likely duplicates. Match the node that appears the most up-to-date and delete the others.",
         actions: candidates.map(node => node.id === newestNode.id ? "match" : "delete")
       }
     }
@@ -44,12 +44,20 @@ export function recommendDisambiguationActions({ match, stop }: MatchedBusStop):
     const closestNodeToStop = candidates.reduce((closest, node) => {
       const distance = calculateDistanceMeters(stop.stop_lat, stop.stop_lon, node.lat, node.lon)
       return distance < closest.distance ? { node, distance } : closest
-    }, { node: candidates[0], distance: Infinity }).node
+    }, { node: candidates[0], distance: Infinity })
+
+    if (closestNodeToStop.distance <= 30) {
+      return {
+        summary: "Choose the closest node",
+        reason: "These nodes are close to the stop location but don't match the stop name or ID. The closest node is likely the correct one, but use your intuition to verify this.",
+        actions: candidates.map(node => node.id === closestNodeToStop.node.id ? "match" : "ignore")
+      }
+    }
 
     return {
-      summary: "Choose the node closest to the stop",
-      reason: "These nodes are close to the stop location but don't match the stop name or ID. The closest node is likely the correct one, but use your intuition to verify this.",
-      actions: candidates.map(node => node.id === closestNodeToStop.id ? "match" : "ignore")
+      summary: "Manually review closest nodes",
+      reason: "These nodes are the closest to, but somewhat far away from, the stop location and don't match the stop name or ID. Use your intiution to verify if any of them match.",
+      actions: candidates.map(() => "ignore")
     }
   }
 

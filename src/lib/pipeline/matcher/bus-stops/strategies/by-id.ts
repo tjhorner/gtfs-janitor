@@ -1,11 +1,11 @@
 import type { GTFSStop } from "$lib/gtfs/parser"
 import type { Node } from "$lib/osm/overpass"
-import type { BusStopMatchingStrategy } from "$lib/pipeline/matcher/bus-stops"
+import type { BusStopMatchingStrategy, MatchingStrategyResult } from "$lib/pipeline/matcher/bus-stops"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
 
 export const matchByIdStrategy = {
   name: "id",
-  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>): Node[] => {
+  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>): MatchingStrategyResult => {
     const stopsMatchingId = candidates.filter(node => (
       node.tags["gtfs:stop_id"] === stopToMatch.stop_id ||
       node.tags["ref"] === stopToMatch.stop_id ||
@@ -14,7 +14,7 @@ export const matchByIdStrategy = {
     ))
   
     if (stopsMatchingId.length <= 1) {
-      return stopsMatchingId
+      return { elements: stopsMatchingId }
     }
 
     // `ref` is typically more up-to-date than `gtfs:stop_id` because
@@ -24,7 +24,7 @@ export const matchByIdStrategy = {
       stop.tags["ref"] === stopToMatch.stop_code
     ))
     if (stopsWithRef.length === 1) {
-      return stopsWithRef
+      return { elements: stopsWithRef }
     }
   
     const closeStopsMatchingId = stopsMatchingId
@@ -35,6 +35,6 @@ export const matchByIdStrategy = {
       .filter(stop => stop.distance < 100)
       .sort((a, b) => a.distance - b.distance)
 
-    return closeStopsMatchingId.map(stop => stop.stop)
+    return { elements: closeStopsMatchingId.map(stop => stop.stop) }
   }
 } satisfies BusStopMatchingStrategy<"id">
