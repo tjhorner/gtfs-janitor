@@ -6,6 +6,7 @@ import nunjucks from "nunjucks"
 import type { MatchedBusStop } from "../matcher/bus-stops"
 import flush from "just-flush"
 import { orderBy as naturalSort } from "natural-orderby"
+import { crc32 } from "$lib/util/crc32"
 
 function getWheelchairTag(wheelchairBoarding: string) {
   switch (wheelchairBoarding) {
@@ -98,6 +99,10 @@ export interface ProcessStopMatchesOptions {
   additionalTags?: { [key: string]: string }
 }
 
+function getNewNodeId(stopId: string) {
+  return -Math.abs(crc32(stopId))
+}
+
 export function processStopMatches(
   stopMatches: MatchedBusStop[],
   osmChange: OsmChangeFile,
@@ -116,7 +121,7 @@ export function processStopMatches(
 
       const newNode: Node = {
         type: "node",
-        id: -stopMatch.stop.stop_id,
+        id: getNewNodeId(stopMatch.stop.stop_id),
         lat: stopMatch.stop.stop_lat,
         lon: stopMatch.stop.stop_lon,
         changeset: -1,

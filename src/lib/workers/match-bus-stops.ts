@@ -1,6 +1,6 @@
 import type { GTFSStop } from "$lib/gtfs/types"
 import type { Node } from "$lib/osm/overpass"
-import { matchBusStop, type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
+import { matchManyBusStops, type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
 
 export interface MatchBusStopsRequest {
   stops: GTFSStop[]
@@ -20,9 +20,8 @@ addEventListener("message", async (event: MessageEvent<MatchBusStopsRequest>) =>
 
     const stopsToReprocess: GTFSStop[] = [ ]
 
-    for (const stop of stopsToProcess) {
-      const match = matchBusStop(candidates, stop)
-
+    const matches = matchManyBusStops(candidates, stopsToProcess)
+    for (const { stop, match } of matches) {
       // We want to re-process ambiguous matches after
       // all definite matches have been found to see if
       // one stop's definite match resolves another's ambiguity

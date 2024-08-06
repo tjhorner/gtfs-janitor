@@ -16,16 +16,6 @@ export const matchByIdStrategy = {
     if (stopsMatchingId.length <= 1) {
       return { elements: stopsMatchingId }
     }
-
-    // `ref` is typically more up-to-date than `gtfs:stop_id` because
-    // humans are more likely to edit it
-    const stopsWithRef = stopsMatchingId.filter(stop => (
-      stop.tags["ref"] === stopToMatch.stop_id ||
-      stop.tags["ref"] === stopToMatch.stop_code
-    ))
-    if (stopsWithRef.length === 1) {
-      return { elements: stopsWithRef }
-    }
   
     const closeStopsMatchingId = stopsMatchingId
       .map(stop => ({
