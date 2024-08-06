@@ -1,16 +1,29 @@
-import type { GTFSStop } from "$lib/gtfs/types"
 import type { Node } from "$lib/osm/overpass"
 import { matchManyBusStops, type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
+import GTFSRepository from "$lib/repository/gtfs"
+import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 
 export interface MatchBusStopsRequest {
-  stops: GTFSStop[]
   candidates: Node[]
 }
 
-addEventListener("message", async (event: MessageEvent<MatchBusStopsRequest>) => {
-  const { stops, candidates } = event.data
+export type MatchBusStopsResponse = {
+  type: "match",
+  match: MatchedBusStop
+} | {
+  type: "complete"
+}
 
-  let stopsToProcess: GTFSStop[] = stops
+const sendResponse = (response: MatchBusStopsResponse) => {
+  postMessage(response)
+}
+
+addEventListener("message", async (event: MessageEvent<MatchBusStopsRequest>) => {
+  const { candidates } = event.data
+
+  const repository = new GTFSRepository()
+
+  let stopsToProcess: IGTFSStop[] = await repository.stops.toArray()
   let pendingMatches: MatchedBusStop[] = [ ]
   let definiteMatchesFound = true
 
@@ -18,7 +31,7 @@ addEventListener("message", async (event: MessageEvent<MatchBusStopsRequest>) =>
     definiteMatchesFound = false
     pendingMatches = [ ]
 
-    const stopsToReprocess: GTFSStop[] = [ ]
+    const stopsToReprocess: IGTFSStop[] = [ ]
 
     const matches = matchManyBusStops(candidates, stopsToProcess)
     for (const { stop, match } of matches) {
@@ -29,7 +42,10 @@ addEventListener("message", async (event: MessageEvent<MatchBusStopsRequest>) =>
         stopsToReprocess.push(stop)
         pendingMatches.push({ stop, match })
       } else {
-        postMessage({ stop, match })
+        sendResponse({
+          type: "match",
+          match: { stop, match }
+        })
       }
 
       if (match && !match.ambiguous) {
@@ -50,6 +66,8 @@ addEventListener("message", async (event: MessageEvent<MatchBusStopsRequest>) =>
   // Only send ambiguous matches after we're sure that
   // all definite matches have been found
   for (const match of pendingMatches) {
-    postMessage(match)
+    sendResponse({ type: "match", match })
   }
+
+  sendResponse({ type: "complete" })
 })

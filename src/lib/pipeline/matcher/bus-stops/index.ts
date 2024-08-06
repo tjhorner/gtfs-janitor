@@ -1,4 +1,4 @@
-import type { GTFSStop } from "$lib/gtfs/types"
+import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import type { Node } from "../../../osm/overpass"
 import { matchByDistanceStrategy } from "./strategies/by-distance"
 import { matchByIdStrategy } from "./strategies/by-id"
@@ -34,7 +34,7 @@ export interface MatchingStrategyResult {
 
 export type BusStopMatchingStrategy<T> = {
   name: T
-  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>) => MatchingStrategyResult
+  match: (candidates: readonly Node[], stopToMatch: Readonly<IGTFSStop>) => MatchingStrategyResult
 }
 
 export const defaultStrategies = [
@@ -43,22 +43,22 @@ export const defaultStrategies = [
   matchByDistanceStrategy
 ]
 
-export function matchBusStop(stopNodes: readonly Node[], stopToMatch: Readonly<GTFSStop>) {
+export function matchBusStop(stopNodes: readonly Node[], stopToMatch: Readonly<IGTFSStop>) {
   return matchBusStopWithStrategies(stopNodes, stopToMatch, defaultStrategies)
 }
 
-export function matchManyBusStops(stopNodes: readonly Node[], stopsToMatch: readonly Readonly<GTFSStop>[]) {
+export function matchManyBusStops(stopNodes: readonly Node[], stopsToMatch: readonly Readonly<IGTFSStop>[]) {
   return matchManyBusStopsWithStrategies(stopNodes, stopsToMatch, defaultStrategies)
 }
 
 export interface MatchedBusStop<T = BusStopMatch | null> {
-  stop: GTFSStop
+  stop: IGTFSStop
   match: T
 }
 
 export function matchBusStopWithStrategy<T extends string>(
   candidates: readonly Node[],
-  stopToMatch: Readonly<GTFSStop>,
+  stopToMatch: Readonly<IGTFSStop>,
   strategy: BusStopMatchingStrategy<T>
 ): BusStopMatch<T> | null {
   const { name, match } = strategy
@@ -90,7 +90,7 @@ export function matchBusStopWithStrategy<T extends string>(
 
 export function matchBusStopWithStrategies<T extends string>(
   candidates: readonly Node[],
-  stopToMatch: Readonly<GTFSStop>,
+  stopToMatch: Readonly<IGTFSStop>,
   strategies: readonly BusStopMatchingStrategy<T>[]
 ): BusStopMatch<T> | null {
   for (const strategy of strategies) {
@@ -104,7 +104,7 @@ export function matchBusStopWithStrategies<T extends string>(
 
 export function* matchManyBusStopsWithStrategies<T extends string>(
   candidates: readonly Node[],
-  stopsToMatch: readonly Readonly<GTFSStop>[],
+  stopsToMatch: readonly Readonly<IGTFSStop>[],
   strategies: readonly BusStopMatchingStrategy<T>[]
 ): Generator<MatchedBusStop> {
   const unmatchedStops = new Set(stopsToMatch)

@@ -32,13 +32,6 @@ export default class GTFSStop extends Entity<GTFSRepository> implements IGTFSSto
   wheelchairBoarding!: string
 
   async getRoutesServingStop(): Promise<IGTFSRoute[]> {
-    return await this.db.table("routes")
-      .where("id")
-      .anyOf(await this.db.table("stopTimes")
-        .where("stopId")
-        .equals(this.id)
-        .distinct()
-        .primaryKeys())
-      .toArray()
+    return this.db.getRoutesServingStop(this.id)
   }
 }

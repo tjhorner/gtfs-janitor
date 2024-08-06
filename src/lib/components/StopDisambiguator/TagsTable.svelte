@@ -70,7 +70,7 @@
         Option {index + 1}:
         <a href={`https://www.openstreetmap.org/${element.type}/${element.id}`} target="_blank">{element.type} {element.id}</a>
         <br>
-        {formatMeters(calculateDistanceMeters(stop.stop_lat, stop.stop_lon, element.lat, element.lon))} away from stop
+        {formatMeters(calculateDistanceMeters(stop.lat, stop.lon, element.lat, element.lon))} away from stop
       </th>
     {/each}
   </tr>

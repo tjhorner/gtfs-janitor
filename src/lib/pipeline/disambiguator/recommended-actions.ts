@@ -1,5 +1,6 @@
+import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import { averageDistance, calculateDistanceMeters } from "$lib/util/geo-math"
-import type { MatchedBusStop } from "../matcher/bus-stops"
+import type { BusStopMatch, MatchedBusStop } from "../matcher/bus-stops"
 import { matchByDistanceStrategy } from "../matcher/bus-stops/strategies/by-distance"
 import { matchByIdStrategy } from "../matcher/bus-stops/strategies/by-id"
 import { matchByNameStrategy } from "../matcher/bus-stops/strategies/by-name"
@@ -11,7 +12,7 @@ export interface DisambiguationRecommendations {
   actions: DisambiguationAction[]
 }
 
-export function recommendDisambiguationActions({ match, stop }: MatchedBusStop): DisambiguationRecommendations | null {
+export function recommendDisambiguationActions(match: BusStopMatch, stop: IGTFSStop): DisambiguationRecommendations | null {
   if (!match?.ambiguous) {
     return null
   }
@@ -42,7 +43,7 @@ export function recommendDisambiguationActions({ match, stop }: MatchedBusStop):
 
   if (match.matchedBy === matchByDistanceStrategy.name) {
     const closestNodeToStop = candidates.reduce((closest, node) => {
-      const distance = calculateDistanceMeters(stop.stop_lat, stop.stop_lon, node.lat, node.lon)
+      const distance = calculateDistanceMeters(stop.lat, stop.lon, node.lat, node.lon)
       return distance < closest.distance ? { node, distance } : closest
     }, { node: candidates[0], distance: Infinity })
 

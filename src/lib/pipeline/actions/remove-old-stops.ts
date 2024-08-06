@@ -7,7 +7,7 @@ export function removeOldStops(
   allCandidateNodes: readonly Node[],
   osmChange: OsmChangeFile
 ) {
-  const stopIds = new Set(stopMatches.flatMap(({ stop }) => [ stop.stop_id, stop.stop_code ]))
+  const stopIds = new Set(stopMatches.flatMap(({ stop }) => [ stop.id, stop.code ]))
 
   const nodesToDelete = allCandidateNodes
     .filter(node => (

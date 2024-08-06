@@ -25,7 +25,7 @@
     }
   }
 
-  $: gtfsStopLocation = [ matchedStop.stop.stop_lon, matchedStop.stop.stop_lat ] as LngLatLike
+  $: gtfsStopLocation = [ matchedStop.stop.lon, matchedStop.stop.lat ] as LngLatLike
 
   $: bounds = matchedStop.match.elements.length
     ? matchedStop.match.elements.reduce((b, el) => {

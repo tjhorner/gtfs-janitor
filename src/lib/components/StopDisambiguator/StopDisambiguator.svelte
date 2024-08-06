@@ -23,7 +23,7 @@
   }>()
 
   function getRecommendations() {
-    recommendations = recommendDisambiguationActions(matchedStop)
+    recommendations = recommendDisambiguationActions(matchedStop.match, matchedStop.stop)
     selectedActions = initialActions ?? recommendations?.actions ?? matchedStop.match.elements.map(() => "ignore")
   }
 
@@ -70,7 +70,7 @@
 <div class="split">
   <div class="info">
     <div>
-      <h2>{matchedStop.stop.stop_name} &mdash; <code>{matchedStop.stop.stop_id}</code></h2>
+      <h2>{matchedStop.stop.name} &mdash; <code>{matchedStop.stop.id}</code></h2>
 
       <p>
         There were no definite matches for this stop on OpenStreetMap. Please review the potential matches below and select the appropriate action for each.

@@ -1,15 +1,15 @@
-import type { GTFSStop } from "$lib/gtfs/types"
 import type { Node } from "$lib/osm/overpass"
 import type { BusStopMatchingStrategy, MatchingStrategyResult } from "$lib/pipeline/matcher/bus-stops"
+import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
 
 export const matchByDistanceStrategy = {
   name: "distance",
-  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>): MatchingStrategyResult => {
+  match: (candidates: readonly Node[], stopToMatch: Readonly<IGTFSStop>): MatchingStrategyResult => {
     const stopsCloseToTarget = candidates
       .map(stop => ({
         stop,
-        distance: calculateDistanceMeters(stop.lat, stop.lon, stopToMatch.stop_lat, stopToMatch.stop_lon)
+        distance: calculateDistanceMeters(stop.lat, stop.lon, stopToMatch.lat, stopToMatch.lon)
       }))
       .filter(stop => stop.distance <= 100)
       .sort((a, b) => a.distance - b.distance)

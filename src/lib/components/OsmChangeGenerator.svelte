@@ -1,15 +1,14 @@
 <script lang="ts">
   import { OsmChangeFile } from "$lib/osm/osmchange"
-  import { applyDisambiguationResults } from "$lib/pipeline/actions/apply-disambiguation-results"
-  import { processStopMatches } from "$lib/pipeline/actions/process-stop-matches"
-  import { removeOldStops } from "$lib/pipeline/actions/remove-old-stops"
   import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
   import { importProfile } from "$lib/stores/import-profile"
   import { stopCandidates } from "$lib/stores/stop-candidates"
   import { jsonataFilter } from "$lib/util/jsonata-filter"
   import type { Draft } from "immer"
-  import memoize from "memoize"
   import Center from "./Center.svelte"
+  import GenerateOsmChangeWorker from "$lib/workers/generate-osmchange?worker"
+  import type { GenerateOsmChangeRequest, GenerateOsmChangeResponse } from "$lib/workers/generate-osmchange"
+  import { onMount } from "svelte"
 
   export let results: Draft<DisambiguationResults>
 
@@ -20,33 +19,38 @@
     removeOldStops: false
   }
 
+  let loading = false
   let osmChangeFile: OsmChangeFile | undefined
+  let osmChangeWorker = new GenerateOsmChangeWorker()
 
-  const generateOsmChangeFile = memoize(async (opts: typeof options) => {
-    const file = new OsmChangeFile()
+  const generateOsmChangeFile = (opts: typeof options) => {
+    return new Promise<OsmChangeFile>(async (resolve, reject) => {
+      const responseHandler = (e: MessageEvent<GenerateOsmChangeResponse>) => {
+        resolve(OsmChangeFile.from(e.data.osmChange))
+        osmChangeWorker.removeEventListener("message", responseHandler)
+      }
 
-    if (opts.removeStagedForDeletion) {
-      applyDisambiguationResults(results, file)
-    }
+      osmChangeWorker.addEventListener("message", responseHandler)
 
-    processStopMatches(results.matches, file, {
-      createNodes: opts.createNewStops,
-      updateNodes: opts.updateExistingStops,
-      additionalTags: $importProfile?.stopTags ?? { }
+      const errorHandler = (e: ErrorEvent) => {
+        reject(e.error)
+        osmChangeWorker.removeEventListener("error", errorHandler)
+      }
+
+      osmChangeWorker.addEventListener("error", errorHandler)
+
+      osmChangeWorker.postMessage({
+        disambiguationResults: results,
+        disusedStopCandidates: await disusedStopCandidates,
+        opts
+      } as GenerateOsmChangeRequest)
     })
-
-    if (opts.removeOldStops) {
-      const candidates = await disusedStopCandidates
-      removeOldStops(results.matches, candidates, file)
-    }
-
-    return file
-  }, {
-    cacheKey: (opts) => JSON.stringify(opts)
-  })
+  }
 
   async function regenerateWithOptions() {
+    loading = true
     osmChangeFile = await generateOsmChangeFile(options)
+    loading = false
   }
 
   async function getDisusedStopCandidates() {
@@ -57,7 +61,7 @@
     return await filter($stopCandidates)
   }
 
-  function exportFile() {
+  async function exportFile() {
     if (!osmChangeFile) return
     const file = new Blob([osmChangeFile.generate()], { type: "application/xml" })
     const url = URL.createObjectURL(file)
@@ -70,6 +74,12 @@
 
   $: options && regenerateWithOptions()
   $: disusedStopCandidates = getDisusedStopCandidates()
+
+  onMount(() => {
+    return () => {
+      osmChangeWorker.terminate()
+    }
+  })
 </script>
 
 <style>
@@ -97,19 +107,19 @@
 
   <div class="form">
     <label>
-      <input type="checkbox" bind:checked={options.createNewStops}>
+      <input type="checkbox" disabled={loading} bind:checked={options.createNewStops}>
       Create new stops
     </label>
     <label>
-      <input type="checkbox" bind:checked={options.updateExistingStops}>
+      <input type="checkbox" disabled={loading} bind:checked={options.updateExistingStops}>
       Update existing stops
     </label>
     <label>
-      <input type="checkbox" bind:checked={options.removeStagedForDeletion}>
+      <input type="checkbox" disabled={loading} bind:checked={options.removeStagedForDeletion}>
       Remove nodes manually staged for deletion
     </label>
     <label>
-      <input type="checkbox" bind:checked={options.removeOldStops} disabled={!$stopCandidates}>
+      <input type="checkbox" disabled={loading || !$stopCandidates} bind:checked={options.removeOldStops}>
       Add <code>disused:*</code> prefix to out-of-service stops
     </label>
   </div>

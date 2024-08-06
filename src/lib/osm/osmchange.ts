@@ -1,14 +1,24 @@
 import xml from "xml"
 import { isNode, type OverpassElement } from "./overpass"
 
-export class OsmChangeFile {
-  #additions: any[] = []
-  #modifications: any[] = []
-  #deletions: any[] = []
+export interface OsmChanges {
+  additions: any[]
+  modifications: any[]
+  deletions: any[]
+}
 
-  get additions() { return Object.freeze(this.#additions) }
-  get modifications() { return Object.freeze(this.#modifications) }
-  get deletions() { return Object.freeze(this.#deletions) }
+export class OsmChangeFile implements OsmChanges {
+  additions: any[] = []
+  modifications: any[] = []
+  deletions: any[] = []
+
+  static from(changes: OsmChanges) {
+    const osmChange = new OsmChangeFile()
+    osmChange.additions = changes.additions
+    osmChange.modifications = changes.modifications
+    osmChange.deletions = changes.deletions
+    return osmChange
+  }
 
   #representAsXml(element: OverpassElement) {
     return {
@@ -34,18 +44,18 @@ export class OsmChangeFile {
   }
 
   addElement(element: OverpassElement) {
-    this.#checkForDuplicateId(element, this.#additions)
-    this.#additions.push(this.#representAsXml(element))
+    this.#checkForDuplicateId(element, this.additions)
+    this.additions.push(this.#representAsXml(element))
   }
 
   modifyElement(element: OverpassElement) {
-    this.#checkForDuplicateId(element, this.#modifications)
-    this.#modifications.push(this.#representAsXml(element))
+    this.#checkForDuplicateId(element, this.modifications)
+    this.modifications.push(this.#representAsXml(element))
   }
 
   deleteElement(element: OverpassElement) {
-    this.#checkForDuplicateId(element, this.#deletions)
-    this.#deletions.push(this.#representAsXml(element))
+    this.#checkForDuplicateId(element, this.deletions)
+    this.deletions.push(this.#representAsXml(element))
   }
 
   generate(): string {
@@ -59,13 +69,13 @@ export class OsmChangeFile {
             }
           },
           {
-            create: this.#additions
+            create: this.additions
           },
           {
-            modify: this.#modifications
+            modify: this.modifications
           },
           {
-            delete: this.#deletions
+            delete: this.deletions
           }
         ]
       }

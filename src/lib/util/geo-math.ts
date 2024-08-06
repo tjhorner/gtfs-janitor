@@ -1,4 +1,4 @@
-import type { GTFSStop } from "$lib/gtfs/types"
+import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import { computeDestinationPoint, getDistance } from "geolib"
 
 export function calculateDistanceMeters(lat1?: number, lon1?: number, lat2?: number, lon2?: number) {
@@ -30,9 +30,9 @@ export function averageDistance(points: readonly { lat: number, lon: number }[])
 
 export type BoundingBox = [ number, number, number, number ]
 
-export function getStopsBoundingBox(stops: GTFSStop[]): BoundingBox {
-  const lats = stops.map(stop => stop.stop_lat)
-  const lons = stops.map(stop => stop.stop_lon)
+export function getStopsBoundingBox(stops: IGTFSStop[]): BoundingBox {
+  const lats = stops.map(stop => stop.lat)
+  const lons = stops.map(stop => stop.lon)
 
   const minLat = Math.min(...lats)
   const minLon = Math.min(...lons)

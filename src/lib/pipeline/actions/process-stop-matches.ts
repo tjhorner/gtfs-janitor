@@ -1,4 +1,3 @@
-import { GTFSRouteType, type GTFSRoute, type GTFSStop } from "$lib/gtfs/types"
 import type { OsmChangeFile } from "$lib/osm/osmchange"
 import type { Node } from "$lib/osm/overpass"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
@@ -7,6 +6,9 @@ import type { MatchedBusStop } from "../matcher/bus-stops"
 import flush from "just-flush"
 import { orderBy as naturalSort } from "natural-orderby"
 import { crc32 } from "$lib/util/crc32"
+import type { IGTFSStop } from "$lib/repository/gtfs/stop"
+import { GTFSRouteType, type IGTFSRoute } from "$lib/repository/gtfs/route"
+import GTFSRepository from "$lib/repository/gtfs"
 
 function getWheelchairTag(wheelchairBoarding: string) {
   switch (wheelchairBoarding) {
@@ -37,18 +39,18 @@ function getLocalRef(name: string) {
   }
 }
 
-function getRouteRef(routes: GTFSRoute[]) {
+function getRouteRef(routes: IGTFSRoute[]) {
   if (routes.length === 0) return undefined
   return naturalSort(routes, [ "route_short_name" ])
-    .map(route => route.route_short_name.trim())
+    .map(route => route.shortName.trim())
     .join(";")
 }
 
-function tagsForOsmBusStop(stop: GTFSStop) {
-  const sanitizedName = stop.stop_name.replaceAll(/ +/g, " ").trim()
-  const wheelchairTag = getWheelchairTag(stop.wheelchair_boarding)
+function tagsForOsmBusStop(stop: IGTFSStop, routesServingStop: IGTFSRoute[]) {
+  const sanitizedName = stop.name.replaceAll(/ +/g, " ").trim()
+  const wheelchairTag = getWheelchairTag(stop.wheelchairBoarding)
 
-  const routeTypesAtStop = new Set(stop.routesServingStop?.map(route => route.route_type))
+  const routeTypesAtStop = new Set(routesServingStop.map(route => route.type))
 
   const busTags = (
     routeTypesAtStop.has(GTFSRouteType.BUS) ? {
@@ -73,10 +75,10 @@ function tagsForOsmBusStop(stop: GTFSStop) {
 
   return flush({
     "name": sanitizedName,
-    "ref": stop.stop_code,
+    "ref": stop.code,
     "local_ref": getLocalRef(sanitizedName),
-    "route_ref": getRouteRef(stop.routesServingStop ?? [ ]),
-    "gtfs:stop_id": stop.stop_id,
+    "route_ref": getRouteRef(routesServingStop),
+    "gtfs:stop_id": stop.id,
     "wheelchair": wheelchairTag,
     ...busTags,
     ...tramTags,
@@ -84,7 +86,7 @@ function tagsForOsmBusStop(stop: GTFSStop) {
   })
 }
 
-function renderAdditionalTags(stop: GTFSStop, tags: [ string, nunjucks.Template | string ][]) {
+function renderAdditionalTags(stop: IGTFSStop, tags: [ string, nunjucks.Template | string ][]) {
   return tags.reduce((acc, [ key, template ]) => {
     return {
       ...acc,
@@ -103,33 +105,37 @@ function getNewNodeId(stopId: string) {
   return -Math.abs(crc32(stopId))
 }
 
-export function processStopMatches(
+export async function processStopMatches(
   stopMatches: MatchedBusStop[],
   osmChange: OsmChangeFile,
+  repository: GTFSRepository,
   options: ProcessStopMatchesOptions = { }
 ) {
   const compiledTags = preCompileTagTemplates(options.additionalTags ?? { })
+  const routesServingStops = await repository.getRoutesForAllStopIds()
 
   for (const stopMatch of stopMatches) {
+    const stop = stopMatch.stop
     if (stopMatch.match?.ambiguous) {
-      console.warn(`Ambiguous match for stop ${stopMatch.stop.stop_id}: ${stopMatch.match.matchedBy}`)
+      console.warn(`Ambiguous match for stop ${stop.id}: ${stopMatch.match.matchedBy}`)
       continue
     }
 
+    const routesServingStop = Array.from(routesServingStops.get(stop.id) ?? [ ])
     if (stopMatch.match === null) {
       if (!options.createNodes) continue
 
       const newNode: Node = {
         type: "node",
-        id: getNewNodeId(stopMatch.stop.stop_id),
-        lat: stopMatch.stop.stop_lat,
-        lon: stopMatch.stop.stop_lon,
+        id: getNewNodeId(stop.id),
+        lat: stop.lat,
+        lon: stop.lon,
         changeset: -1,
         version: 1,
         tags: {
-          ...tagsForOsmBusStop(stopMatch.stop),
+          ...tagsForOsmBusStop(stop, routesServingStop),
           "public_transport": "platform",
-          ...renderAdditionalTags(stopMatch.stop, compiledTags)
+          ...renderAdditionalTags(stop, compiledTags)
         }
       }
 
@@ -142,21 +148,21 @@ export function processStopMatches(
     const modifiedNode: Node = structuredClone(stopMatch.match.element)
 
     const distanceFromExistingNode = calculateDistanceMeters(
-      stopMatch.stop.stop_lat,
-      stopMatch.stop.stop_lon,
+      stop.lat,
+      stop.lon,
       stopMatch.match.element.lat,
       stopMatch.match.element.lon
     )
 
     if (distanceFromExistingNode > 100) {
-      modifiedNode.lat = stopMatch.stop.stop_lat
-      modifiedNode.lon = stopMatch.stop.stop_lon
+      modifiedNode.lat = stop.lat
+      modifiedNode.lon = stop.lon
     }
 
     modifiedNode.tags = {
       ...modifiedNode.tags,
-      ...tagsForOsmBusStop(stopMatch.stop),
-      ...renderAdditionalTags(stopMatch.stop, compiledTags)
+      ...tagsForOsmBusStop(stop, routesServingStop),
+      ...renderAdditionalTags(stop, compiledTags)
     }
 
     delete modifiedNode.tags["disused:highway"]

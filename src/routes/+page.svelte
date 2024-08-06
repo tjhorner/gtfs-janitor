@@ -5,20 +5,17 @@
   import OsmChangeGenerator from "$lib/components/OsmChangeGenerator.svelte"
   import ProfileChooser from "$lib/components/ProfileChooser.svelte"
   import StopMatcher from "$lib/components/StopMatcher.svelte"
-  import type { GTFSData } from "$lib/gtfs/types"
   import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
   import type { MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { savedDisambiguationSession } from "$lib/stores/disambiguation-session"
   import { importProfile } from "$lib/stores/import-profile"
   import type { Draft } from "immer"
-  
-  let gtfsData: Readonly<GTFSData> | undefined
+
   let matchedStops: MatchedBusStop[] = [ ]
   let step: "upload" | "match" | "disambiguate" | "export" = "upload"
   let disambiguationResults: Draft<DisambiguationResults> | undefined
 
-  function handleGtfsData(event: CustomEvent<GTFSData>) {
-    gtfsData = Object.freeze(event.detail)
+  function handleGtfsData() {
     step = "match"
   }
 
@@ -62,9 +59,9 @@
 {#if !$importProfile}
   <ProfileChooser />
 {:else if step === "upload"}
-  <GtfsUpload on:gtfsData={handleGtfsData} />
-{:else if step === "match" && gtfsData}
-  <StopMatcher {gtfsData} on:matches={handleMatchedStops} />
+  <GtfsUpload on:done={handleGtfsData} />
+{:else if step === "match"}
+  <StopMatcher on:matches={handleMatchedStops} />
 {:else if step === "disambiguate"}
   <MultipleStopsDisambiguator
     {matchedStops}

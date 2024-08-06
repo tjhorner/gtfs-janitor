@@ -5,11 +5,10 @@ export interface ImportGTFSDataRequest {
   gtfsBlob: Blob
 }
 
+const repository = new GTFSRepository()
+
 addEventListener("message", async (event: MessageEvent<ImportGTFSDataRequest>) => {
   const { gtfsBlob } = event.data
-  const repository = new GTFSRepository()
-  await importToRepository(repository, gtfsBlob, () => {
-    postMessage(null)
-  })
-  console.log("we did it reddit")
+  await importToRepository(repository, gtfsBlob)
+  postMessage(null)
 })

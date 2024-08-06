@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { GTFSData } from "$lib/gtfs/types"
   import { isNode } from "$lib/osm/overpass"
   import { getStopElementsInBbox } from "$lib/osm/query"
   import { type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
@@ -7,12 +6,12 @@
   import { stopCandidates } from "$lib/stores/stop-candidates"
   import { expandBoundingBox, getStopsBoundingBox } from "$lib/util/geo-math"
   import { jsonataFilter } from "$lib/util/jsonata-filter"
-  import type { MatchBusStopsRequest } from "$lib/workers/match-bus-stops"
+  import type { MatchBusStopsRequest, MatchBusStopsResponse } from "$lib/workers/match-bus-stops"
   import BusStopMatchWorker from "$lib/workers/match-bus-stops?worker"
   import { createEventDispatcher, onMount } from "svelte"
   import Center from "./Center.svelte"
-
-  export let gtfsData: GTFSData
+  import { gtfsRepository } from "$lib/stores/gtfs-repository"
+  import { liveQuery, type Observable } from "dexie"
 
   const dispatch = createEventDispatcher<{
     matches: MatchedBusStop[]
@@ -20,19 +19,20 @@
 
   let step: "confirm" | "downloadOsmData" | "matchStops" = "confirm"
   let currentStop = 0
+  let totalStops: Observable<number | undefined> = liveQuery(() => $gtfsRepository.stops.count())
 
   let matches: MatchedBusStop[] = [ ]
 
   let worker: Worker | undefined
 
-  function handleWorkerMessage(e: MessageEvent<MatchedBusStop>) {
-    currentStop++
-    matches.push(e.data)
-
-    if (currentStop === gtfsData.stops.length) {
+  function handleWorkerMessage(e: MessageEvent<MatchBusStopsResponse>) {
+    const resp = e.data
+    if (resp.type === "match") {
+      currentStop++
+      matches.push(resp.match)
+    } else if (resp.type === "complete") {
       worker?.terminate()
       worker = undefined
-
       dispatch("matches", matches)
     }
   }
@@ -42,7 +42,7 @@
     // so that we catch stops that may have moved or are
     // out of service
     const bbox = expandBoundingBox(
-      getStopsBoundingBox(gtfsData.stops),
+      await $gtfsRepository.getStopsBoundingBox(),
       5000 // 5km
     )
 
@@ -65,15 +65,14 @@
     worker.onmessage = handleWorkerMessage
 
     const request: MatchBusStopsRequest = {
-      candidates: candidateNodes,
-      stops: gtfsData.stops
+      candidates: candidateNodes
     }
 
     worker.postMessage(request)
   }
 
   const pctFormat = new Intl.NumberFormat(undefined, { style: "percent" })
-  $: percentComplete = pctFormat.format(currentStop / gtfsData.stops.length)
+  $: percentComplete = pctFormat.format(currentStop / ($totalStops ?? 1))
 
   onMount(() => {
     return () => {
@@ -85,16 +84,16 @@
 <Center>
   {#if step === "confirm"}
     <p>
-      Found {gtfsData.stops.length.toLocaleString()} bus stops from GTFS data. Continue?
+      Found {$totalStops?.toLocaleString() ?? 0} transit stops from GTFS data. Continue?
     </p>
 
     <div>
       <button on:click={matchStops}>Start Import</button>
     </div>
   {:else if step === "downloadOsmData"}
-    Querying Overpass for existing bus stops...
+    Querying Overpass for existing transit stops...
   {:else if step === "matchStops"}
-    <p>Matching bus stops...</p>
+    <p>Matching transit stops...</p>
     <p>{percentComplete} complete</p>
   {/if}
 </Center>

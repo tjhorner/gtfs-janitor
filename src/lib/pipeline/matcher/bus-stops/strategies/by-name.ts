@@ -1,6 +1,6 @@
-import type { GTFSStop } from "$lib/gtfs/types"
 import type { Node } from "$lib/osm/overpass"
 import type { BusStopMatchingStrategy, MatchingStrategyResult } from "$lib/pipeline/matcher/bus-stops"
+import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
 import memoize from "memoize"
 
@@ -27,8 +27,8 @@ const normalizeStopName = memoize((name?: string) => {
 
 export const matchByNameStrategy = {
   name: "name",
-  match: (candidates: readonly Node[], stopToMatch: Readonly<GTFSStop>): MatchingStrategyResult => {
-    const normalizedName = normalizeStopName(stopToMatch.stop_name)
+  match: (candidates: readonly Node[], stopToMatch: Readonly<IGTFSStop>): MatchingStrategyResult => {
+    const normalizedName = normalizeStopName(stopToMatch.name)
 
     const stopsMatchingName = candidates.filter(node => (
       normalizeStopName(node.tags["name"]) === normalizedName ||
@@ -42,7 +42,7 @@ export const matchByNameStrategy = {
     const closeStopsMatchingName = stopsMatchingName
       .map(stop => ({
         stop,
-        distance: calculateDistanceMeters(stop.lat, stop.lon, stopToMatch.stop_lat, stopToMatch.stop_lon)
+        distance: calculateDistanceMeters(stop.lat, stop.lon, stopToMatch.lat, stopToMatch.lon)
       }))
       .filter(stop => stop.distance < 100)
       .sort((a, b) => a.distance - b.distance)
