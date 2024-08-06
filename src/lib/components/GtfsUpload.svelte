@@ -1,9 +1,13 @@
 <script lang="ts">
-  import { readGtfsZip } from "$lib/gtfs/parser"
+  import { importToRepository, readGtfsZip } from "$lib/gtfs/parser"
   import { importProfile } from "$lib/stores/import-profile"
   import { createEventDispatcher } from "svelte"
   import Center from "./Center.svelte"
   import type { GTFSData } from "$lib/gtfs/types"
+  import GTFSImportWorker from "$lib/workers/import-gtfs-data?worker"
+  import { gtfsRepository } from "$lib/stores/gtfs-repository"
+
+  let indexedItems = 0
 
   const dispatch = createEventDispatcher<{
     gtfsData: GTFSData
@@ -14,10 +18,17 @@
   async function processUpload({ currentTarget }: { currentTarget: EventTarget & HTMLInputElement }) {
     loading = true
 
-    const gtfsData = await readGtfsZip(currentTarget.files![0])
-    dispatch("gtfsData", gtfsData)
+    // const gtfsData = await readGtfsZip(currentTarget.files![0])
+    // dispatch("gtfsData", gtfsData)
 
-    loading = false
+    // await importToRepository($gtfsRepository, currentTarget.files![0])
+    const worker = new GTFSImportWorker()
+    worker.onmessage = () => {
+      indexedItems++
+    }
+    worker.postMessage({ gtfsBlob: currentTarget.files![0] })
+
+    // loading = false
   }
 
   function changeProfile() {
@@ -35,6 +46,10 @@
   {#if loading}
     <p>
       Processing GTFS data... (this can take a while)
+    </p>
+
+    <p>
+      Indexed {indexedItems} items
     </p>
   {:else}
     <input
