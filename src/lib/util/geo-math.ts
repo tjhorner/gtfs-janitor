@@ -35,24 +35,24 @@ export function getStopsBoundingBox(stops: GTFSStop[]): BoundingBox {
   const lons = stops.map(stop => stop.stop_lon)
 
   const minLat = Math.min(...lats)
-  const maxLat = Math.max(...lats)
   const minLon = Math.min(...lons)
+  const maxLat = Math.max(...lats)
   const maxLon = Math.max(...lons)
 
   return [ minLat, minLon, maxLat, maxLon ]
 }
 
 export function expandBoundingBox(bbox: BoundingBox, distance: number): BoundingBox {
-  const topLeftCorner = { lat: bbox[0], lon: bbox[1] }
-  const expandedTopLeft = computeDestinationPoint(topLeftCorner, distance, 315)
+  const bottomLeftCorner = { lat: bbox[0], lon: bbox[1] }
+  const expandedBottomLeft = computeDestinationPoint(bottomLeftCorner, distance, 225)
 
-  const bottomRightCorner = { lat: bbox[2], lon: bbox[3] }
-  const expandedBottomRight = computeDestinationPoint(bottomRightCorner, distance, 135)
+  const topRightCorner = { lat: bbox[2], lon: bbox[3] }
+  const expandedTopRight = computeDestinationPoint(topRightCorner, distance, 45)
 
   return [
-    expandedTopLeft.latitude,
-    expandedTopLeft.longitude,
-    expandedBottomRight.latitude,
-    expandedBottomRight.longitude
+    expandedBottomLeft.latitude,
+    expandedBottomLeft.longitude,
+    expandedTopRight.latitude,
+    expandedTopRight.longitude
   ]
 }
