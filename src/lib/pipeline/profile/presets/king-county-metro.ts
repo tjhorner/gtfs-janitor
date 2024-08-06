@@ -10,8 +10,7 @@ export const kcmProfile: ImportProfile = {
     )
       or
     (
-      // We *do* want public_transport=stop_position
-      // for other modes of transport, like tram and rail
+      /* We *do* want public_transport=stop_position for other modes of transport, like tram and rail */
       $not($exists($v.tags.bus)) or
       $v.tags.bus = "no"
     )
