@@ -56,7 +56,10 @@
   <Control position="top-left">
     <ControlGroup>
       <ControlButton on:click={() => satelliteImagery = !satelliteImagery}>
-        🌍
+        <span title="Toggle Aerial Imagery">🌍</span>
+      </ControlButton>
+      <ControlButton on:click={fitBounds}>
+        <span title="Re-Center Map">📍</span>
       </ControlButton>
     </ControlGroup>
   </Control>

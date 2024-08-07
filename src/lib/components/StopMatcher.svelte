@@ -82,13 +82,21 @@
 </script>
 
 <Center>
+  <h1>Match Stops</h1>
+
   {#if step === "confirm"}
     <p>
-      Found {$totalStops?.toLocaleString() ?? 0} transit stops from GTFS data. Continue?
+      Imported {$totalStops?.toLocaleString() ?? 0} transit stops from GTFS data.
+    </p>
+
+    <p>
+      Next, GTFS Janitor will search OpenStreetMap for existing transit stops and
+      attempt to automatically match them to stops in the GTFS data. After that,
+      you will be able to review any ambiguous matches.
     </p>
 
     <div>
-      <button on:click={matchStops}>Start Import</button>
+      <button on:click={matchStops}>Start Matching</button>
     </div>
   {:else if step === "downloadOsmData"}
     Querying Overpass for existing transit stops...

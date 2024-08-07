@@ -91,6 +91,6 @@ export async function importToRepository(
     await repository.stops.bulkAdd(stops)
     await repository.routes.bulkAdd(routes)
     await repository.trips.bulkAdd(trips)
-    await repository.tripStops.bulkAdd(Array.from(tripStops.entries()).map(([tripId, stopIds]) => ({ tripId, stopIds })))
+    await repository.tripStops.bulkAdd(Array.from(tripStops.entries()).map(([ tripId, stopIds ]) => ({ tripId, stopIds })))
   })
 }

@@ -130,11 +130,7 @@
 </div>
 
 <Modal bind:shown={showKeyboardShortcuts}>
-  <h2>Tips</h2>
-
-  <p>
-    You can use the following keyboard shortcuts to speed up your workflow:
-  </p>
+  <h2>Keyboard Shortcuts</h2>
 
   <ul style="padding-left: 1.5em">
     <li>
@@ -237,6 +233,7 @@
   kbd {
     font-family: monospace;
     background: #f8f9fa;
+    color: #333;
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 0.1em 0.3em;

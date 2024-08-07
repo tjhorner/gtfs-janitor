@@ -28,6 +28,10 @@ a {
   .maplibregl-ctrl-attrib a {
     color: #00a4f7 !important;
   }
+
+  .maplibregl-ctrl-group button+button {
+    border-color: #434343 !important;
+  }
 }
 
 *, * * {

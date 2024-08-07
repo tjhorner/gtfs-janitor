@@ -47,12 +47,12 @@
 
   {#if loading}
     <p>
-      Processing GTFS data... (this can take a while)
+      Importing GTFS data... (this can take a while, please don't close the tab)
     </p>
   {:else}
     {#if $stopCount > 0}
       <p>
-        You previously imported {$stopCount.toLocaleString()} into GTFS Janitor.
+        You previously imported {$stopCount.toLocaleString()} stops into GTFS Janitor.
         Would you like to use those or upload a new GTFS feed?
       </p>
 
