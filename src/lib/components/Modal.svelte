@@ -47,6 +47,17 @@
     cursor: pointer;
   }
 
+  @media (prefers-color-scheme: dark) {
+    .container {
+      background-color: #333;
+      color: white;
+    }
+
+    .close-button {
+      color: white;
+    }
+  }
+
   .container :global(*) {
     margin: 0;
   }

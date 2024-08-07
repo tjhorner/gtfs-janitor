@@ -95,6 +95,13 @@
     padding: 0.5em;
     border-radius: 0.25em;
   }
+
+  @media (prefers-color-scheme: dark) {
+    .changeset-suggestion {
+      background-color: #333;
+      color: white;
+    }
+  }
 </style>
 
 <Center>

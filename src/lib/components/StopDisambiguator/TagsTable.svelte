@@ -56,6 +56,21 @@
     background-color: #f2f2f2;
   }
 
+  @media (prefers-color-scheme: dark) {
+    th {
+      background-color: #333;
+      color: white;
+    }
+
+    tr:not(.actions):hover {
+      background-color: #444;
+    }
+
+    th, td {
+      border-color: #555;
+    }
+  }
+
   .sticky-left {
     position: sticky;
     left: 0;

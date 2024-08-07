@@ -214,6 +214,16 @@
     cursor: not-allowed;
   }
 
+  @media (prefers-color-scheme: dark) {
+    .info .controls button {
+      background: #404040;
+    }
+
+    .info .controls button:disabled {
+      background: #6c757d;
+    }
+  }
+
   .info .controls button.submit {
     background-color: #007bff;
     flex: 1;

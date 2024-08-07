@@ -25,6 +25,13 @@
     transition: background-color 0.1s ease, transform 0.1s ease;
   }
 
+  @media (prefers-color-scheme: dark) {
+    .button {
+      background-color: #333;
+      color: white;
+    }
+  }
+
   .button:has(input:checked) {
     background-color: #007bff;
     color: white;

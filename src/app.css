@@ -6,6 +6,30 @@ html, body {
   width: 100%;
 }
 
+a {
+  color: #069;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+  }
+  
+  .maplibregl-ctrl-group {
+    background-color: #1a1a1a !important;
+  }
+
+  .maplibregl-ctrl-attrib {
+    background-color: #1a1a1a !important;
+    color: #f0f0f0 !important;
+  }
+
+  .maplibregl-ctrl-attrib a {
+    color: #00a4f7 !important;
+  }
+}
+
 *, * * {
   box-sizing: border-box;
 }
