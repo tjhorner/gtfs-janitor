@@ -35,8 +35,18 @@ export const matchByNameStrategy = {
       normalizeStopName(node.tags["ref"]) === normalizedName
     ))
 
-    if (stopsMatchingName.length <= 1) {
-      return { elements: stopsMatchingName }
+    if (stopsMatchingName.length === 0) {
+      return { elements: [ ] }
+    }
+
+    if (stopsMatchingName.length === 1) {
+      const node = stopsMatchingName[0]
+      const distance = calculateDistanceMeters(node.lat, node.lon, stopToMatch.lat, stopToMatch.lon)
+
+      return {
+        elements: stopsMatchingName,
+        alwaysAmbiguous: distance > 30
+      }
     }
 
     const closeStopsMatchingName = stopsMatchingName

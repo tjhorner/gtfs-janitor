@@ -1,26 +1,18 @@
 import type { OsmChangeFile } from "$lib/osm/osmchange"
 import type { Node } from "$lib/osm/overpass"
-import { type MatchedBusStop } from "../matcher/bus-stops"
+import { isDefiniteMatch, type MatchedBusStop } from "../matcher/bus-stops"
 
 export function removeOldStops(
   stopMatches: MatchedBusStop[],
-  allCandidateNodes: readonly Node[],
+  candidatesForRemoval: readonly Node[],
   osmChange: OsmChangeFile
 ) {
-  const stopIds = new Set(stopMatches.flatMap(({ stop }) => [ stop.id, stop.code ]))
+  const definiteMatches = stopMatches
+    .map(({ match }) => match)
+    .filter((match) => isDefiniteMatch(match))
 
-  const nodesToDelete = allCandidateNodes
-    .filter(node => (
-      (
-        node.tags["ref"] &&
-        !stopIds.has(node.tags["ref"])
-      )
-        ||
-      (
-        node.tags["gtfs:stop_id"] &&
-        !stopIds.has(node.tags["gtfs:stop_id"])
-      )
-    ))
+  const matchedNodeIds = new Set(definiteMatches.map((match) => match.element.id))
+  const nodesToDelete = candidatesForRemoval.filter(node => !matchedNodeIds.has(node.id))
 
   for (const node of nodesToDelete) {
     const modifiedNode = structuredClone(node)

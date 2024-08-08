@@ -22,7 +22,9 @@ candidateNodeFilter: |
 
 disusedStopFilter: |
   $contains($v.tags.operator, "King County Metro") or
-  $contains($v.tags.network, "King County Metro")
+  $contains($v.tags.network, "King County Metro") or
+  $contains($v.tags.source, "King County GIS") or
+  $contains($v.tags."gtfs:dataset_id", "KCGIS")
 
 stopTags:
   operator: "King County Metro"

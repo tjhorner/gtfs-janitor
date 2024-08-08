@@ -19,8 +19,7 @@ You may also discuss the project in the [OpenStreetMap World](https://discord.gg
 - Route matching
   - Match GTFS routes/route masters to OSM relations
   - Include bus stop nodes in relations
-  - Include route ways in relations using map matching technniques
-  - Add `route_ref` to bus stops
+  - Include route ways in relations using map matching techniques
 - Better PTv2 compatibility
   - Support for separately-mapped `public_transport=platform` ways
   - Support for `public_transport=stop_area` relations
