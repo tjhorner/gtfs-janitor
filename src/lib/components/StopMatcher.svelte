@@ -101,6 +101,7 @@
     Querying Overpass for existing transit stops...
   {:else if step === "matchStops"}
     <p>Matching transit stops...</p>
+    <p>{currentStop.toLocaleString()} / {($totalStops ?? 0).toLocaleString()} stops</p>
     <p>{percentComplete} complete</p>
   {/if}
 </Center>
