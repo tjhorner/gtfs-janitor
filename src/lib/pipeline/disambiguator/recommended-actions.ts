@@ -17,9 +17,17 @@ export function recommendDisambiguationActions(match: BusStopMatch, stop: IGTFSS
     return null
   }
 
-  const candidates = Object.freeze(match.elements)
+  const candidates = match.elements
 
   if (match.matchedBy === matchByIdStrategy.name) {
+    if (candidates.length === 1) {
+      return {
+        summary: "Manually verify node with matching stop ID",
+        reason: "This node has a matching stop ID but is very far away. This may be a different agency's stop that shares the same ID. Manually verify that it's correct.",
+        actions: ["ignore"]
+      }
+    }
+
     const avgDistance = averageDistance(candidates)
     if (avgDistance < 40) {
       const mostRecentNodes = [...candidates].sort((a, b) => b.changeset - a.changeset)

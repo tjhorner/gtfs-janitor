@@ -13,8 +13,18 @@ export const matchByIdStrategy = {
       node.tags["ref"] === stopToMatch.code
     ))
   
-    if (stopsMatchingId.length <= 1) {
+    if (stopsMatchingId.length === 0) {
       return { elements: stopsMatchingId }
+    }
+
+    if (stopsMatchingId.length === 1) {
+      const node = stopsMatchingId[0]
+      const distance = calculateDistanceMeters(node.lat, node.lon, stopToMatch.lat, stopToMatch.lon)
+
+      return {
+        elements: stopsMatchingId,
+        alwaysAmbiguous: distance >= 500
+      }
     }
   
     const closeStopsMatchingId = stopsMatchingId
