@@ -1,9 +1,13 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
   import { fade, scale } from "svelte/transition"
-  export let shown = false
+  import { clickoutside } from "@svelte-put/clickoutside"
 
   const dispatch = createEventDispatcher<{ hide: void }>()
+
+  export let shown = false
+
+  let container: HTMLDivElement
 
   function hide() {
     shown = false
@@ -12,7 +16,7 @@
 </script>
 
 <style>
-  .modal {
+  .container {
     position: fixed;
     top: 0;
     left: 0;
@@ -25,7 +29,7 @@
     z-index: 100;
   }
 
-  .container {
+  .modal {
     display: flex;
     flex-direction: column;
     position: relative;
@@ -48,7 +52,7 @@
   }
 
   @media (prefers-color-scheme: dark) {
-    .container {
+    .modal {
       background-color: #333;
       color: white;
     }
@@ -58,14 +62,19 @@
     }
   }
 
-  .container :global(*) {
+  .modal :global(*) {
     margin: 0;
   }
 </style>
 
 {#if shown}
-  <div class="modal" transition:fade={{ duration: 150 }}>
-    <div class="container" transition:scale={{ duration: 150, start: 0.7 }}>
+  <div bind:this={container} class="container" transition:fade={{ duration: 150 }}>
+    <div
+      class="modal"
+      use:clickoutside={{ limit: { parent: container } }}
+      on:clickoutside={hide}
+      transition:scale={{ duration: 150, start: 0.7 }}
+    >
       <button class="close-button" on:click={hide}>&times;</button>
       <slot />
     </div>

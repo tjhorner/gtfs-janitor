@@ -50,7 +50,18 @@
         ? "delete"
         : "ignore"
 
-    selectedActions[index] = nextAction
+    setAction(index, nextAction)
+  }
+
+  function setAction(index: number, action: DisambiguationAction) {
+    if (action === "match") {
+      const previousMatchIndex = selectedActions.indexOf("match")
+      if (previousMatchIndex !== -1) {
+        selectedActions[previousMatchIndex] = selectedActions[index]
+      }
+    }
+
+    selectedActions[index] = action
   }
 
   function handleKeyboardShortcuts(e: KeyboardEvent) {
@@ -93,8 +104,9 @@
 
     <div class="tags">
       <TagsTable
-        stopMatch={matchedStop}
-        bind:selectedActions={selectedActions}
+        {selectedActions}
+        {matchedStop}
+        {setAction}
       />
     </div>
 
@@ -123,7 +135,7 @@
   </div>
 
   <DisambiguatorMap
-    bind:selectedActions={selectedActions}
+    {selectedActions}
     {matchedStop}
     {cycleAction}
   />

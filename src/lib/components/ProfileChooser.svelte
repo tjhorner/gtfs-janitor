@@ -23,9 +23,9 @@
     try {
       const profile = await fetchImportProfile(profileUrl)
       $importProfile = profile
-    } catch(e) {
+    } catch(e: any) {
       console.warn(e)
-      alert("Could not fetch profile. Please ensure it's valid JSON or YAML and that the website's CORS settings allow fetching it.")
+      alert(`Could not fetch profile: ${e.message}`)
     }
 
     loading = false
@@ -41,7 +41,12 @@
   }
 
   async function usePastedProfile() {
-    $importProfile = await parseProfile(pastedProfile)
+    try {
+      $importProfile = await parseProfile(pastedProfile)
+    } catch (e: any) {
+      console.warn(e)
+      alert(`Could not parse profile: ${e.message}`)
+    }
   }
 
   $: urlIsValid = validateUrl(profileUrl)
@@ -67,7 +72,7 @@
   }
 </style>
 
-<Modal shown={showWarning}>
+<Modal bind:shown={showWarning}>
   <h1>Warning about external profiles</h1>
 
   <p>

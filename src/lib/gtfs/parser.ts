@@ -27,12 +27,17 @@ function getStreamForEntry(entries: Entry[], name: string) {
 
 export async function importToRepository(
   repository: GTFSRepository,
-  blob: Blob
+  blob: Blob,
+  progress?: (message: string) => void
 ) {
   const blobReader = new BlobReader(blob)
   const zipReader = new ZipReader(blobReader)
 
   const entries = await zipReader.getEntries()
+
+  await repository.clearAll()
+
+  progress?.("Importing stops...")
 
   const stops = (await parseEntryAsCsv(entries, "stops.txt")).map(stop => ({
     id: stop.stop_id,
@@ -49,6 +54,10 @@ export async function importToRepository(
     wheelchairBoarding: stop.wheelchair_boarding
   }))
 
+  await repository.stops.bulkAdd(stops)
+
+  progress?.("Importing routes...")
+
   const routes = (await parseEntryAsCsv(entries, "routes.txt")).map(route => ({
     id: route.route_id,
     agencyId: route.agency_id,
@@ -61,6 +70,10 @@ export async function importToRepository(
     textColor: route.route_text_color
   }))
 
+  await repository.routes.bulkAdd(routes)
+
+  progress?.("Importing trips...")
+
   const trips = (await parseEntryAsCsv(entries, "trips.txt")).map(trip => ({
     id: trip.trip_id,
     routeId: trip.route_id,
@@ -71,6 +84,10 @@ export async function importToRepository(
     blockId: trip.block_id,
   }))
 
+  await repository.trips.bulkAdd(trips)
+
+  progress?.("Importing stop times (this one can take a while)...")
+
   const tripStops = new Map<string, string[]>()
   await getStreamForEntry(entries, "stop_times.txt").subscribe(async stopTime => {
     if (!tripStops.has(stopTime.trip_id)) {
@@ -79,18 +96,8 @@ export async function importToRepository(
     tripStops.get(stopTime.trip_id)!.push(stopTime.stop_id)
   })
 
-  await repository.clearAll()
-
-  await repository.transaction(
-    "rw",
-    repository.stops,
-    repository.tripStops,
-    repository.routes,
-    repository.trips,
-  async () => {
-    await repository.stops.bulkAdd(stops)
-    await repository.routes.bulkAdd(routes)
-    await repository.trips.bulkAdd(trips)
-    await repository.tripStops.bulkAdd(Array.from(tripStops.entries()).map(([ tripId, stopIds ]) => ({ tripId, stopIds })))
-  })
+  await repository.tripStops.bulkAdd(
+    Array.from(tripStops.entries())
+    .map(([ tripId, stopIds ]) => ({ tripId, stopIds }))
+  )
 }

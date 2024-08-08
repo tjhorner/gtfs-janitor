@@ -2,22 +2,30 @@
   import { importProfile } from "$lib/stores/import-profile"
   import { createEventDispatcher } from "svelte"
   import Center from "./Center.svelte"
-  import GTFSImportWorker from "$lib/workers/import-gtfs-data?worker"
   import { gtfsRepository } from "$lib/stores/gtfs-repository"
   import { liveQuery } from "dexie"
+  import type { ImportGTFSDataResponse } from "$lib/workers/import-gtfs-data"
 
   const dispatch = createEventDispatcher<{
     done: void
   }>()
 
   let loading = false
+  let progressMessage = "Starting GTFS import..."
   let stopCount = liveQuery(() => $gtfsRepository.stops.count())
 
   async function processUpload({ currentTarget }: { currentTarget: EventTarget & HTMLInputElement }) {
     loading = true
 
-    const worker = new GTFSImportWorker()
-    worker.onmessage = () => {
+    const worker = new Worker(new URL("$lib/workers/import-gtfs-data", import.meta.url), { type: "module" })
+    worker.onmessage = (e: MessageEvent<ImportGTFSDataResponse>) => {
+      const resp = e.data
+
+      if (resp.type === "progress") {
+        progressMessage = resp.message
+        return
+      }
+      
       worker.terminate()
       dispatch("done")
       loading = false
@@ -47,7 +55,7 @@
 
   {#if loading}
     <p>
-      Importing GTFS data... (this can take a while, please don't close the tab)
+      {progressMessage}
     </p>
   {:else}
     {#if $stopCount > 0}

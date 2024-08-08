@@ -4,10 +4,9 @@
   import { type MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { importProfile } from "$lib/stores/import-profile"
   import { stopCandidates } from "$lib/stores/stop-candidates"
-  import { expandBoundingBox, getStopsBoundingBox } from "$lib/util/geo-math"
+  import { expandBoundingBox } from "$lib/util/geo-math"
   import { jsonataFilter } from "$lib/util/jsonata-filter"
   import type { MatchBusStopsRequest, MatchBusStopsResponse } from "$lib/workers/match-bus-stops"
-  import BusStopMatchWorker from "$lib/workers/match-bus-stops?worker"
   import { createEventDispatcher, onMount } from "svelte"
   import Center from "./Center.svelte"
   import { gtfsRepository } from "$lib/stores/gtfs-repository"
@@ -61,7 +60,7 @@
 
     $stopCandidates = candidateNodes
 
-    const worker = new BusStopMatchWorker()
+    const worker = new Worker(new URL("$lib/workers/match-bus-stops", import.meta.url), { type: "module" })
     worker.onmessage = handleWorkerMessage
 
     const request: MatchBusStopsRequest = {

@@ -29,9 +29,7 @@ export interface GenerateOsmChangeResponse {
 
 const repository = new GTFSRepository()
 
-const sendResponse = (response: GenerateOsmChangeResponse) => {
-  postMessage(response)
-}
+const sendResponse = (response: GenerateOsmChangeResponse) => postMessage(response)
 
 const generateWithRequest = memoize(async (req: GenerateOsmChangeRequest) => {
   const { disambiguationResults, disusedStopCandidates, opts } = req

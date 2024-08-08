@@ -10,6 +10,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
+		"@modyfi/vite-plugin-yaml": "^1.1.0",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/adapter-static": "^3.0.2",
 		"@sveltejs/kit": "^2.0.0",
@@ -24,7 +25,9 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@svelte-put/clickoutside": "^3.0.2",
 		"@zip.js/zip.js": "^2.7.47",
+		"arktype": "^2.0.0-beta.5",
 		"csvtojson": "^2.0.10",
 		"dexie": "^4.0.8",
 		"geolib": "^3.3.4",

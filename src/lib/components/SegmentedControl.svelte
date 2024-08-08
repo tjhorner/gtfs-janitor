@@ -60,6 +60,7 @@
     >
       <input
         type="radio"
+        on:change
         bind:group={value}
         value={option.value}
       />

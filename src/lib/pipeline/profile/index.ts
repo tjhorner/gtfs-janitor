@@ -1,9 +1,13 @@
-export interface ImportProfile {
-  name: string
-  candidateNodeFilter: string
-  disusedStopFilter?: string
-  stopTags: { [key: string]: string }
-}
+import { type } from "arktype"
+
+const importProfile = type({
+  name: "string",
+  candidateNodeFilter: "string",
+  "disusedStopFilter?": "string",
+  stopTags: { "[string]": "string" }
+})
+
+export type ImportProfile = typeof importProfile.tValidatedOut
 
 export async function parseProfile(content: string): Promise<ImportProfile> {
   let parsedConfig
@@ -13,9 +17,13 @@ export async function parseProfile(content: string): Promise<ImportProfile> {
     console.log("Failed to parse JSON config, trying YAML")
   }
 
-  if (!parsedConfig) {
-    const { parse } = await import("yaml")
-    parsedConfig = parse(content)
+  try {
+    if (!parsedConfig) {
+      const { parse } = await import("yaml")
+      parsedConfig = parse(content)
+    }
+  } catch(e: any) {
+    throw new Error(`Failed to parse profile as either YAML or JSON: ${e.message}`)
   }
 
   return validateImportProfile(parsedConfig)
@@ -32,21 +40,10 @@ export async function fetchImportProfile(url: string): Promise<ImportProfile> {
 }
 
 export function validateImportProfile(config: any): ImportProfile {
-  if (!config.name || typeof config.name !== 'string') {
-    throw new Error("name must be a string")
+  const profile = importProfile(config)
+  if (profile instanceof type.errors) {
+    throw new Error(`The provided profile was invalid. Errors:\n\n${profile.summary}`)
   }
 
-  if (!config.candidateNodeFilter || typeof config.candidateNodeFilter !== 'string') {
-    throw new Error("candidateNodeFilter must be a string")
-  }
-
-  if (config.disusedStopFilter && typeof config.disusedStopFilter !== 'string') {
-    throw new Error("disusedStopFilter must be a string")
-  }
-
-  if (!config.stopTags || typeof config.stopTags !== 'object') {
-    throw new Error("stopTags must be an object")
-  }
-
-  return config
+  return profile
 }

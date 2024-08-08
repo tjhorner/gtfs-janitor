@@ -14,9 +14,7 @@ export type MatchBusStopsResponse = {
   type: "complete"
 }
 
-const sendResponse = (response: MatchBusStopsResponse) => {
-  postMessage(response)
-}
+const sendResponse = (response: MatchBusStopsResponse) => postMessage(response)
 
 addEventListener("message", async (event: MessageEvent<MatchBusStopsRequest>) => {
   const { candidates } = event.data

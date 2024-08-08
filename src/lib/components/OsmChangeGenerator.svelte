@@ -6,7 +6,6 @@
   import { jsonataFilter } from "$lib/util/jsonata-filter"
   import type { Draft } from "immer"
   import Center from "./Center.svelte"
-  import GenerateOsmChangeWorker from "$lib/workers/generate-osmchange?worker"
   import type { GenerateOsmChangeRequest, GenerateOsmChangeResponse } from "$lib/workers/generate-osmchange"
   import { onMount } from "svelte"
 
@@ -21,7 +20,7 @@
 
   let loading = false
   let osmChangeFile: OsmChangeFile | undefined
-  let osmChangeWorker = new GenerateOsmChangeWorker()
+  let osmChangeWorker = new Worker(new URL("$lib/workers/generate-osmchange", import.meta.url), { type: "module" })
 
   const generateOsmChangeFile = (opts: typeof options) => {
     return new Promise<OsmChangeFile>(async (resolve, reject) => {

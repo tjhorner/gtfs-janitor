@@ -5,8 +5,9 @@
   import SegmentedControl from "../SegmentedControl.svelte"
   import { getColor } from "./colors"
 
-  export let stopMatch: MatchedBusStop<AmbiguousBusStopMatch>
-  export let selectedActions: DisambiguationAction[]
+  export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
+  export let setAction: (index: number, action: DisambiguationAction) => void
+  export let selectedActions: readonly DisambiguationAction[]
 
   function formatMeters(meters: number) {
     return meters.toLocaleString(undefined, {
@@ -16,8 +17,12 @@
     })
   }
 
-  $: match = stopMatch.match
-  $: stop = stopMatch.stop
+  function onActionUpdate(index: number, e: any) {
+    setAction(index, e.currentTarget.value)
+  }
+
+  $: match = matchedStop.match
+  $: stop = matchedStop.stop
   $: allTagKeys = match.elements.reduce((acc, element) => {
     return acc.union(new Set(Object.keys(element.tags)))
   }, new Set<string>())
@@ -102,7 +107,8 @@
     {#each match.elements as _, index}
       <td>
         <SegmentedControl
-          bind:value={selectedActions[index]}
+          value={selectedActions[index]}
+          on:change={(e) => onActionUpdate(index, e)}
           options={[
             { label: "Ignore", value: "ignore" },
             { label: "Match", value: "match" },

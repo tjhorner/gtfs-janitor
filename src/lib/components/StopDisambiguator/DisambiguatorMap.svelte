@@ -3,9 +3,10 @@
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import maplibregl from "maplibre-gl"
   import { onMount } from "svelte"
-  import { Control, ControlButton, ControlGroup, MapLibre, Marker, RasterLayer, RasterTileSource, type LngLatLike } from "svelte-maplibre"
+  import { Control, ControlGroup, MapLibre, Marker, RasterLayer, RasterTileSource, type LngLatLike } from "svelte-maplibre"
   import Legend from "./Legend.svelte"
   import NodeMarker from "./NodeMarker.svelte"
+  import MapControlButton from "./MapControlButton.svelte"
 
   export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
   export let selectedActions: DisambiguationAction[]
@@ -36,7 +37,9 @@
   $: bounds && map && fitBounds()
 
   onMount(() => {
-    map.once("load", fitBounds)
+    map.once("load", () => {
+      fitBounds()
+    })
   })
 </script>
 
@@ -55,12 +58,14 @@
 >
   <Control position="top-left">
     <ControlGroup>
-      <ControlButton on:click={() => satelliteImagery = !satelliteImagery}>
-        <span title="Toggle Aerial Imagery">🌍</span>
-      </ControlButton>
-      <ControlButton on:click={fitBounds}>
-        <span title="Re-Center Map">📍</span>
-      </ControlButton>
+      <MapControlButton
+        label="Toggle Aerial Imagery"
+        on:click={() => satelliteImagery = !satelliteImagery}
+      >🌍</MapControlButton>
+      <MapControlButton
+        label="Re-Center Map"
+        on:click={fitBounds}
+      >📍</MapControlButton>
     </ControlGroup>
   </Control>
 
