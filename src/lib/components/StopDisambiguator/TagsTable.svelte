@@ -1,13 +1,18 @@
 <script lang="ts">
+  import { tagsForOsmBusStop } from "$lib/pipeline/actions/process-stop-matches"
   import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
+  import { gtfsRepository } from "$lib/stores/gtfs-repository"
   import { calculateDistanceMeters } from "$lib/util/geo-math"
+  import { fade, slide } from "svelte/transition"
   import SegmentedControl from "../SegmentedControl.svelte"
   import { getColor } from "./colors"
 
   export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
   export let setAction: (index: number, action: DisambiguationAction) => void
   export let selectedActions: readonly DisambiguationAction[]
+
+  let expectedTags: Promise<Record<string, string>> | undefined
 
   function formatMeters(meters: number) {
     return meters.toLocaleString(undefined, {
@@ -21,11 +26,20 @@
     setAction(index, e.currentTarget.value)
   }
 
+  async function getExpectedTags(stopId: string) {
+    const routesServingStop = await $gtfsRepository.getRoutesServingStop(stopId)
+    return tagsForOsmBusStop(matchedStop.stop, routesServingStop)
+  }
+
   $: match = matchedStop.match
   $: stop = matchedStop.stop
-  $: allTagKeys = match.elements.reduce((acc, element) => {
-    return acc.union(new Set(Object.keys(element.tags)))
-  }, new Set<string>())
+
+  $: expectedTags = getExpectedTags(matchedStop.stop.id)
+  $: allTagKeys = expectedTags?.then(expected => (
+    match.elements.reduce((acc, element) => {
+      return acc.union(new Set(Object.keys(element.tags)))
+    }, new Set<string>(Object.keys(expected)))
+  )) ?? Promise.resolve(new Set<string>([ ]))
 </script>
 
 <style>
@@ -82,9 +96,12 @@
   }
 </style>
 
-<table>
+{#await allTagKeys then tagKeys}
+
+<table transition:fade={{ duration: 50 }}>
   <tr>
     <th class="sticky-left">Key</th>
+    <th>Expected Value</th>
     {#each match.elements as element, index}
       <th style={`background-color: ${getColor(index)}; color: white`}>
         Option {index + 1}:
@@ -94,16 +111,19 @@
       </th>
     {/each}
   </tr>
-  {#each allTagKeys as key}
+  {#each tagKeys as key}
     <tr>
       <th class="key sticky-left">{key}</th>
+      {#await expectedTags then expectedValues}
+        <td>{expectedValues[key] ?? ""}</td>
+      {/await}
       {#each match.elements as element}
         <td>{element.tags[key] ?? ""}</td>
       {/each}
     </tr>
   {/each}
   <tr class="actions">
-    <td></td>
+    <td colspan="2"></td>
     {#each match.elements as _, index}
       <td>
         <SegmentedControl
@@ -119,3 +139,5 @@
     {/each}
   </tr>
 </table>
+
+{/await}

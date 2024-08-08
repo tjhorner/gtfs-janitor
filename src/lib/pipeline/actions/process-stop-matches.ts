@@ -46,7 +46,7 @@ function getRouteRef(routes: IGTFSRoute[]) {
     .join(";")
 }
 
-function tagsForOsmBusStop(stop: IGTFSStop, routesServingStop: IGTFSRoute[]) {
+export function tagsForOsmBusStop(stop: IGTFSStop, routesServingStop: IGTFSRoute[]) {
   const sanitizedName = stop.name.replaceAll(/ +/g, " ").trim()
   const wheelchairTag = getWheelchairTag(stop.wheelchairBoarding)
 
@@ -166,6 +166,8 @@ export async function processStopMatches(
     }
 
     delete modifiedNode.tags["disused:highway"]
+    delete modifiedNode.tags["disused:public_transport"]
+
     osmChange.modifyElement(modifiedNode)
   }
 }
