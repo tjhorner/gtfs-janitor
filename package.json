@@ -43,6 +43,7 @@
 		"p-mutex": "^0.1.0",
 		"readable-web-to-node-stream": "^3.0.2",
 		"svelte-maplibre": "^0.9.10",
+		"svelte-splitpanes": "^8.0.5",
 		"xml": "^1.0.1",
 		"yaml": "^2.5.0"
 	}

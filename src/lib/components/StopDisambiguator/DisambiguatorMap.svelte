@@ -17,10 +17,11 @@
 
   function fitBounds() {
     if (!map || !bounds) return
-    map.fitBounds(bounds, { padding: 200, duration: 0, maxZoom: 19 })
+    map.fitBounds(bounds, { padding: 100, duration: 0, maxZoom: 19 })
   }
 
   function handleKeyboardShortcuts(event: KeyboardEvent) {
+    if (event.ctrlKey || event.metaKey) return
     if (event.key === "i") {
       satelliteImagery = !satelliteImagery
     }

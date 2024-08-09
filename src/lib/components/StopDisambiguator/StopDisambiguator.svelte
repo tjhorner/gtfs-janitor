@@ -8,6 +8,7 @@
   import DisambiguatorMap from "./DisambiguatorMap.svelte"
   import TagsTable from "./TagsTable.svelte"
   import { cycleValues } from "$lib/util/cycle-values"
+  import { Pane, Splitpanes } from "svelte-splitpanes"
 
   export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
   export let canUndo: boolean
@@ -59,12 +60,15 @@
   }
 
   function handleKeyboardShortcuts(e: KeyboardEvent) {
+    if (e.ctrlKey || e.metaKey) return
     if (e.key >= "1" && e.key <= "9") {
       const index = parseInt(e.key) - 1
       cycleAction(index)
     } else if (e.key === "d" || e.key === "ArrowRight") {
+      e.preventDefault()
       submitActions()
     } else if (e.key === "a" || e.key === "ArrowLeft") {
+      e.preventDefault()
       undoActions()
     }
   }
@@ -72,70 +76,76 @@
   $: matchedStop && getRecommendations()
 </script>
 
-<div class="split">
-  <div class="info">
-    <div>
-      <h2>{matchedStop.stop.name} &mdash; <code>{matchedStop.stop.id}</code></h2>
-
-      <p>
-        There were no definite matches for this stop on OpenStreetMap.
-        Please review the potential matches below and select the appropriate
-        action for each. If no match is selected, a new node will be created
-        in the resulting changeset.
-      </p>
-
-      <ul>
-        <li><strong>Ignore</strong>: Leave this node as-is.</li>
-        <li><strong>Match</strong>: Associate this node with the stop and use it for edits.</li>
-        <li><strong>Delete</strong>: Delete this node in the exported changeset.</li>
-      </ul>
-
-      <p>
-        <strong>Tip</strong>: You can use <LinkButton on:click={() => showKeyboardShortcuts = true}>keyboard shortcuts</LinkButton> to speed up your workflow.
-      </p>
-    </div>
-
-    <div class="tags">
-      <TagsTable
-        {selectedActions}
-        {matchedStop}
-        {setAction}
-      />
-    </div>
-
-    <div class="controls">
-      {#if recommendations}
+<Splitpanes style="height: 100%">
+  <Pane size={50} maxSize={80} minSize={35}>
+    <div class="info">
+      <div>
+        <h2>{matchedStop.stop.name} &mdash; <code>{matchedStop.stop.id}</code></h2>
+  
         <p>
-          <span style="font-size: 1.2em">
-            <strong>Recommendation</strong>: {recommendations.summary}
-          </span>
-          <br/>
-          {recommendations.reason}
+          There were no definite matches for this stop on OpenStreetMap. Please
+          review the potential matches below and select the appropriate action for
+          each. If no match is selected, a new node will be created in the
+          resulting changeset.
         </p>
-      {/if}
-
-      <div class="buttons">
-        <button disabled={!canUndo} on:click={undoActions}>
-          Undo
-        </button>
-        <button class="submit" on:click={submitActions}>
-          Submit
-        </button>
+  
+        <ul>
+          <li><strong>Ignore</strong>: Leave this node as-is.</li>
+          <li><strong>Match</strong>: Associate this node with the stop and use it for edits.</li>
+          <li><strong>Delete</strong>: Delete this node in the exported changeset.</li>
+        </ul>
+  
+        <p>
+          💡 Speed up your workflow with <LinkButton on:click={() => showKeyboardShortcuts = true}>these tips</LinkButton>.
+        </p>
       </div>
-
-      <slot name="controls" />
+  
+      <div class="tags">
+        <TagsTable
+          {selectedActions}
+          {matchedStop}
+          {setAction}
+        />
+      </div>
+  
+      <div class="controls">
+        {#if recommendations}
+          <p>
+            <span style="font-size: 1.2em">
+              <strong>Recommendation</strong>: {recommendations.summary}
+            </span>
+            <br/>
+            {recommendations.reason}
+          </p>
+        {/if}
+  
+        <div class="buttons">
+          <button disabled={!canUndo} on:click={undoActions}>
+            Undo
+          </button>
+          <button class="submit" on:click={submitActions}>
+            Submit
+          </button>
+        </div>
+  
+        <slot name="controls" />
+      </div>
     </div>
-  </div>
+  </Pane>
 
-  <DisambiguatorMap
-    {selectedActions}
-    {matchedStop}
-    {cycleAction}
-  />
-</div>
+  <Pane size={50}>
+    <DisambiguatorMap
+      {selectedActions}
+      {matchedStop}
+      {cycleAction}
+    />
+  </Pane>
+</Splitpanes>
 
 <Modal bind:shown={showKeyboardShortcuts}>
-  <h2>Keyboard Shortcuts</h2>
+  <h2>Tips</h2>
+
+  <h3>Keyboard Shortcuts</h3>
 
   <ul style="padding-left: 1.5em">
     <li>
@@ -155,9 +165,12 @@
     </li>
   </ul>
 
-  <p>
-    You can also click the nodes on the map to cycle through the actions.
-  </p>
+  <h3>Other Tips</h3>
+
+  <ul style="padding-left: 1.5em">
+    <li>You can click the nodes on the map to cycle through the actions.</li>
+    <li>The map can be resized with the handle in the center.</li>
+  </ul>
 </Modal>
 
 <svelte:window on:keydown={handleKeyboardShortcuts} />
@@ -167,15 +180,6 @@
     display: block;
     overflow-x: scroll;
     flex-shrink: 0;
-  }
-
-  .split {
-    display: flex;
-    height: 100%;
-  }
-
-  .split > :global(*) {
-    flex: 1;
   }
 
   .info {

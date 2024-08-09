@@ -40,6 +40,19 @@ a {
   .maplibregl-ctrl-group button+button {
     border-color: #434343 !important;
   }
+
+  .splitpanes.default-theme .splitpanes__splitter {
+    background-color: #434343 !important;
+    border-color: #515151 !important;
+  }
+
+  .splitpanes.default-theme .splitpanes__splitter:before, .splitpanes.default-theme .splitpanes__splitter:after {
+    background-color: rgb(255 255 255 / 15%) !important;
+  }
+
+  .splitpanes.default-theme .splitpanes__splitter:hover:before, .splitpanes.default-theme .splitpanes__splitter:hover:after {
+    background-color: rgb(255 255 255 / 25%) !important;
+  }
 }
 
 *, * * {
@@ -48,4 +61,18 @@ a {
 
 p, ul {
   line-height: 1.5;
+}
+
+/* Override splitpanes styles */
+.splitpanes__pane {
+  background: initial !important;
+  overflow: scroll !important;
+}
+
+.splitpanes.default-theme .splitpanes__splitter {
+  border-right: 1px solid #EEE;
+}
+
+.default-theme.splitpanes--vertical>.splitpanes__splitter, .default-theme .splitpanes--vertical>.splitpanes__splitter {
+  width: 8px !important;
 }

@@ -35,6 +35,7 @@
   }
 
   function handleKeyboardShortcuts(e: KeyboardEvent) {
+    if (e.ctrlKey || e.metaKey) return
     if (e.key === "s") {
       diffMode = cycleValues(diffMode, [ "off", "chars", "words" ] as const)
     }
@@ -66,6 +67,10 @@
     font-family: monospace;
   }
 
+  .value {
+    min-width: 200px;
+  }
+
   tr:not(.actions):hover {
     background-color: #f1f1f1;
   }
@@ -87,6 +92,12 @@
 
   th {
     background-color: #f2f2f2;
+    white-space: nowrap;
+  }
+
+  .distance {
+    font-size: 0.8em;
+    opacity: 0.8;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -105,6 +116,7 @@
   }
 
   .sticky-left {
+    z-index: 10;
     position: sticky;
     left: 0;
   }
@@ -130,17 +142,20 @@
         Option {index + 1}:
         <a href={`https://www.openstreetmap.org/${element.type}/${element.id}`} target="_blank">{element.type} {element.id}</a>
         <br>
-        {formatMeters(calculateDistanceMeters(stop.lat, stop.lon, element.lat, element.lon))} away from stop
+        <span class="distance">
+          {formatMeters(calculateDistanceMeters(stop.lat, stop.lon, element.lat, element.lon))}
+          away from stop
+        </span>
       </th>
     {/each}
   </tr>
   {#each tagKeys as key}
     {#await expectedTags then expectedValues}
       <tr>
-        <th class="mono key sticky-left">{key}</th>
-        <td class="mono">{expectedValues[key] ?? ""}</td>
+        <th class="mono sticky-left">{key}</th>
+        <td class="mono value">{expectedValues[key] ?? ""}</td>
         {#each match.elements as element}
-          <td class="mono">
+          <td class="mono value">
             {#if diffMode === "off"}
               {element.tags[key] ?? ""}
             {:else}
