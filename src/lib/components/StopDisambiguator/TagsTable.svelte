@@ -58,6 +58,9 @@
   table {
     border-collapse: collapse;
     width: 100%;
+  }
+
+  .mono {
     font-family: monospace;
   }
 
@@ -70,7 +73,7 @@
   }
 
   tr.actions td:first-of-type {
-    visibility: hidden;
+    vertical-align: middle;
     border: none;
   }
 
@@ -106,16 +109,10 @@
 
   label {
     display: block;
-    margin-bottom: 1em;
   }
 </style>
 
 <svelte:window on:keydown={handleKeyboardShortcuts} />
-
-<label>
-  <input type="checkbox" bind:checked={showDiffs}>
-  Show diffs from expected tags
-</label>
 
 {#await allTagKeys then tagKeys}
 
@@ -135,10 +132,10 @@
   {#each tagKeys as key}
     {#await expectedTags then expectedValues}
       <tr>
-        <th class="key sticky-left">{key}</th>
-        <td>{expectedValues[key] ?? ""}</td>
+        <th class="mono key sticky-left">{key}</th>
+        <td class="mono">{expectedValues[key] ?? ""}</td>
         {#each match.elements as element}
-          <td>
+          <td class="mono">
             {#if showDiffs}
               <TextDiff before={expectedValues[key] ?? ""} after={element.tags[key] ?? ""} />
             {:else}
@@ -150,7 +147,12 @@
     {/await}
   {/each}
   <tr class="actions">
-    <td colspan="2"></td>
+    <td colspan="2">
+      <label>
+        <input type="checkbox" bind:checked={showDiffs}>
+        Show diffs from expected tags
+      </label>
+    </td>
     {#each match.elements as _, index}
       <td>
         <SegmentedControl
