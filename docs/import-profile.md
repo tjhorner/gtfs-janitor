@@ -21,6 +21,7 @@ candidateNodeFilter: |
     )
       or
     (
+      /* We *do* want public_transport=stop_position for other modes of transport, like tram and rail */
       $not($exists($v.tags.bus)) or
       $v.tags.bus = "no"
     )
@@ -31,10 +32,12 @@ candidateNodeFilter: |
     $contains($v.tags.operator, "King County Metro") or
     $contains($v.tags.network, "King County Metro")
   )
- 
+
 disusedStopFilter: |
   $contains($v.tags.operator, "King County Metro") or
-  $contains($v.tags.network, "King County Metro")
+  $contains($v.tags.network, "King County Metro") or
+  $contains($v.tags.source, "King County GIS") or
+  $contains($v.tags."gtfs:dataset_id", "KCGIS")
 
 stopTags:
   operator: "King County Metro"
@@ -43,6 +46,8 @@ stopTags:
   operator:wikipedia: "en:King County Metro"
   gtfs:feed: "US-WA-KCM"
 ```
+
+For more examples, see the [import profile presets directory](../src/lib/pipeline/profile/presets).
 
 ## Fields
 
