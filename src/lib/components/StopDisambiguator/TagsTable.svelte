@@ -4,17 +4,18 @@
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { gtfsRepository } from "$lib/stores/gtfs-repository"
   import { calculateDistanceMeters } from "$lib/util/geo-math"
-  import { fade, slide } from "svelte/transition"
+  import { fade } from "svelte/transition"
   import SegmentedControl from "../SegmentedControl.svelte"
   import { getColor } from "./colors"
   import TextDiff from "../TextDiff.svelte"
+  import { cycleValues } from "$lib/util/cycle-values"
 
   export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
   export let setAction: (index: number, action: DisambiguationAction) => void
   export let selectedActions: readonly DisambiguationAction[]
 
   let expectedTags: Promise<Record<string, string>> | undefined
-  let showDiffs = false
+  let diffMode: "off" | "chars" | "words" = "off"
 
   function formatMeters(meters: number) {
     return meters.toLocaleString(undefined, {
@@ -35,7 +36,7 @@
 
   function handleKeyboardShortcuts(e: KeyboardEvent) {
     if (e.key === "s") {
-      showDiffs = !showDiffs
+      diffMode = cycleValues(diffMode, [ "off", "chars", "words" ] as const)
     }
   }
 
@@ -107,8 +108,11 @@
     left: 0;
   }
 
-  label {
-    display: block;
+  .diff-control {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
   }
 </style>
 
@@ -136,10 +140,10 @@
         <td class="mono">{expectedValues[key] ?? ""}</td>
         {#each match.elements as element}
           <td class="mono">
-            {#if showDiffs}
-              <TextDiff before={expectedValues[key] ?? ""} after={element.tags[key] ?? ""} />
-            {:else}
+            {#if diffMode === "off"}
               {element.tags[key] ?? ""}
+            {:else}
+              <TextDiff mode={diffMode} before={expectedValues[key] ?? ""} after={element.tags[key] ?? ""} />
             {/if}
           </td>
         {/each}
@@ -148,10 +152,17 @@
   {/each}
   <tr class="actions">
     <td colspan="2">
-      <label>
-        <input type="checkbox" bind:checked={showDiffs}>
-        Show diffs from expected tags
-      </label>
+      <div class="diff-control">
+        Diff:
+        <SegmentedControl
+          bind:value={diffMode}
+          options={[
+            { label: "Off", value: "off" },
+            { label: "Chars", value: "chars" },
+            { label: "Words", value: "words" }
+          ]}
+        />
+      </div>
     </td>
     {#each match.elements as _, index}
       <td>

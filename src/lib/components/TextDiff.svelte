@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { diffWords } from "diff"
+  import { diffChars, diffWords } from "diff"
 
   export let before: string
   export let after: string
+  export let mode: "chars" | "words" = "words"
 
-  $: diff = diffWords(before, after)
+  $: diff = mode === "chars" ? diffChars(before, after) : diffWords(before, after)
 </script>
 
 <style>

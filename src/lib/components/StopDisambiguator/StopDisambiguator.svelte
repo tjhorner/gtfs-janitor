@@ -7,6 +7,7 @@
   import Modal from "../Modal.svelte"
   import DisambiguatorMap from "./DisambiguatorMap.svelte"
   import TagsTable from "./TagsTable.svelte"
+  import { cycleValues } from "$lib/util/cycle-values"
 
   export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
   export let canUndo: boolean
@@ -42,14 +43,7 @@
 
   function cycleAction(index: number) {
     if (index + 1 > matchedStop.match.elements.length) return
-
-    const currentAction = selectedActions[index]
-    const nextAction = currentAction === "ignore"
-      ? "match"
-      : currentAction === "match"
-        ? "delete"
-        : "ignore"
-
+    const nextAction = cycleValues(selectedActions[index], [ "ignore", "match", "delete" ] as const)
     setAction(index, nextAction)
   }
 
@@ -149,7 +143,7 @@
       <kbd>I</kbd> &mdash; Toggle aerial imagery
     </li>
     <li>
-      <kbd>S</kbd> &mdash; Toggle tag diffs
+      <kbd>S</kbd> &mdash; Toggle tag diff mode
     </li>
     <li>
       <kbd>1-9</kbd> &mdash; Cycle through the actions for the corresponding option
