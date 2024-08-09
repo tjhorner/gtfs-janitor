@@ -42,7 +42,7 @@
 		"nunjucks": "^3.2.4",
 		"p-mutex": "^0.1.0",
 		"readable-web-to-node-stream": "^3.0.2",
-		"svelte-maplibre": "^0.9.9",
+		"svelte-maplibre": "^0.9.10",
 		"xml": "^1.0.1",
 		"yaml": "^2.5.0"
 	}
