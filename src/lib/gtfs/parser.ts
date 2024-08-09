@@ -2,8 +2,13 @@ import { BlobReader, ZipReader, type Entry } from "@zip.js/zip.js"
 import { ReadableWebToNodeStream } from "readable-web-to-node-stream"
 import csv from "csvtojson/v2"
 import type GTFSRepository from "$lib/repository/gtfs"
+import type { CSVParseParam } from "csvtojson/v2/Parameters"
 
-async function parseEntryAsCsv<T = any>(entries: Entry[], name: string): Promise<T[]> {
+function getStreamForEntry(
+  entries: Entry[],
+  name: string,
+  params: Partial<CSVParseParam> = { }
+) {
   const entry = entries.find(entry => entry.filename === name)
   if (!entry) {
     throw new Error(`No file named ${name} found in GTFS zip`)
@@ -11,18 +16,31 @@ async function parseEntryAsCsv<T = any>(entries: Entry[], name: string): Promise
 
   const stream = new TransformStream()
   entry.getData!(stream.writable)
-  return csv().fromStream(new ReadableWebToNodeStream(stream.readable) as any)
+  return csv(params).fromStream(new ReadableWebToNodeStream(stream.readable) as any)
 }
 
-function getStreamForEntry(entries: Entry[], name: string) {
-  const entry = entries.find(entry => entry.filename === name)
-  if (!entry) {
-    throw new Error(`No file named ${name} found in GTFS zip`)
+async function getTransformedCsvForEntry<T>(
+  entries: Entry[],
+  name: string,
+  transform: (input: any) => T
+): Promise<T[]> {
+  const results: T[] = [ ]
+  await getStreamForEntry(entries, name, {
+    needEmitAll: false
+  }).subscribe(row => {
+    results.push(transform(row))
+  })
+
+  return results
+}
+
+function assertFloat(value: string) {
+  const parsed = parseFloat(value)
+  if (isNaN(parsed)) {
+    throw new Error(`Expected float, got ${value}`)
   }
 
-  const stream = new TransformStream()
-  entry.getData!(stream.writable)
-  return csv().fromStream(new ReadableWebToNodeStream(stream.readable) as any)
+  return parsed
 }
 
 export async function importToRepository(
@@ -39,13 +57,13 @@ export async function importToRepository(
 
   progress?.("Importing stops...")
 
-  const stops = (await parseEntryAsCsv(entries, "stops.txt")).map(stop => ({
+  const stops = await getTransformedCsvForEntry(entries, "stops.txt", stop => ({
     id: stop.stop_id,
     code: stop.stop_code,
     name: stop.stop_name,
     desc: stop.stop_desc,
-    lat: parseFloat(stop.stop_lat),
-    lon: parseFloat(stop.stop_lon),
+    lat: assertFloat(stop.stop_lat),
+    lon: assertFloat(stop.stop_lon),
     zoneId: stop.zone_id,
     url: stop.stop_url,
     locationType: stop.location_type,
@@ -58,7 +76,7 @@ export async function importToRepository(
 
   progress?.("Importing routes...")
 
-  const routes = (await parseEntryAsCsv(entries, "routes.txt")).map(route => ({
+  const routes = await getTransformedCsvForEntry(entries, "routes.txt", route => ({
     id: route.route_id,
     agencyId: route.agency_id,
     shortName: route.route_short_name,
@@ -74,7 +92,7 @@ export async function importToRepository(
 
   progress?.("Importing trips...")
 
-  const trips = (await parseEntryAsCsv(entries, "trips.txt")).map(trip => ({
+  const trips = await getTransformedCsvForEntry(entries, "trips.txt", trip => ({
     id: trip.trip_id,
     routeId: trip.route_id,
     serviceId: trip.service_id,
@@ -89,7 +107,9 @@ export async function importToRepository(
   progress?.("Importing stop times (this one can take a while)...")
 
   const tripStops = new Map<string, string[]>()
-  await getStreamForEntry(entries, "stop_times.txt").subscribe(async stopTime => {
+  await getStreamForEntry(entries, "stop_times.txt", {
+    needEmitAll: false
+  }).subscribe(async stopTime => {
     if (!tripStops.has(stopTime.trip_id)) {
       tripStops.set(stopTime.trip_id, [])
     }
