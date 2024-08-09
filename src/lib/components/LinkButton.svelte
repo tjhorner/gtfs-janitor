@@ -5,7 +5,7 @@
     border: none;
     padding: 0 !important;
     font-family: arial, sans-serif;
-    color: #069;
+    color: var(--link-color);
     text-decoration: underline;
     cursor: pointer;
     font-size: inherit;

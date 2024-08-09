@@ -1,6 +1,7 @@
 :root {
   --color-foreground: #262626;
   --color-background: #FFF;
+  --link-color: #069;
 }
 
 html, body {
@@ -13,13 +14,14 @@ html, body {
 }
 
 a {
-  color: #069;
+  color: var(--link-color);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --color-foreground: #f0f0f0;
     --color-background: #1a1a1a;
+    --link-color: #00a4f7;
   }
   
   .maplibregl-ctrl-group {

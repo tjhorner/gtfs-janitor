@@ -78,18 +78,17 @@
       <h2>{matchedStop.stop.name} &mdash; <code>{matchedStop.stop.id}</code></h2>
 
       <p>
-        There were no definite matches for this stop on OpenStreetMap. Please review the potential matches below and select the appropriate action for each.
+        There were no definite matches for this stop on OpenStreetMap.
+        Please review the potential matches below and select the appropriate
+        action for each. If no match is selected, a new node will be created
+        in the resulting changeset.
       </p>
 
       <ul>
         <li><strong>Ignore</strong>: Leave this node as-is.</li>
-        <li><strong>Match</strong>: Associate this node with the bus stop and use it for edits.</li>
+        <li><strong>Match</strong>: Associate this node with the stop and use it for edits.</li>
         <li><strong>Delete</strong>: Delete this node in the exported changeset.</li>
       </ul>
-
-      <p>
-        If no match is selected, a new node will be created to represent this bus stop in OpenStreetMap.
-      </p>
 
       <p>
         <strong>Tip</strong>: You can use <LinkButton on:click={() => showKeyboardShortcuts = true}>keyboard shortcuts</LinkButton> to speed up your workflow.

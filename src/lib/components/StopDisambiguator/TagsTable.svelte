@@ -57,6 +57,7 @@
   }
 
   table {
+    --link-color: #FFF;
     border-collapse: collapse;
     width: 100%;
   }
