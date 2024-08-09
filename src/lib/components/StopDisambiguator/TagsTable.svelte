@@ -7,12 +7,14 @@
   import { fade, slide } from "svelte/transition"
   import SegmentedControl from "../SegmentedControl.svelte"
   import { getColor } from "./colors"
+  import TextDiff from "../TextDiff.svelte"
 
   export let matchedStop: MatchedBusStop<AmbiguousBusStopMatch>
   export let setAction: (index: number, action: DisambiguationAction) => void
   export let selectedActions: readonly DisambiguationAction[]
 
   let expectedTags: Promise<Record<string, string>> | undefined
+  let showDiffs = false
 
   function formatMeters(meters: number) {
     return meters.toLocaleString(undefined, {
@@ -29,6 +31,12 @@
   async function getExpectedTags(stopId: string) {
     const routesServingStop = await $gtfsRepository.getRoutesServingStop(stopId)
     return tagsForOsmBusStop(matchedStop.stop, routesServingStop)
+  }
+
+  function handleKeyboardShortcuts(e: KeyboardEvent) {
+    if (e.key === "s") {
+      showDiffs = !showDiffs
+    }
   }
 
   $: match = matchedStop.match
@@ -50,6 +58,7 @@
   table {
     border-collapse: collapse;
     width: 100%;
+    font-family: monospace;
   }
 
   tr:not(.actions):hover {
@@ -94,7 +103,19 @@
     position: sticky;
     left: 0;
   }
+
+  label {
+    display: block;
+    margin-bottom: 1em;
+  }
 </style>
+
+<svelte:window on:keydown={handleKeyboardShortcuts} />
+
+<label>
+  <input type="checkbox" bind:checked={showDiffs}>
+  Show diffs from expected tags
+</label>
 
 {#await allTagKeys then tagKeys}
 
@@ -112,15 +133,21 @@
     {/each}
   </tr>
   {#each tagKeys as key}
-    <tr>
-      <th class="key sticky-left">{key}</th>
-      {#await expectedTags then expectedValues}
+    {#await expectedTags then expectedValues}
+      <tr>
+        <th class="key sticky-left">{key}</th>
         <td>{expectedValues[key] ?? ""}</td>
-      {/await}
-      {#each match.elements as element}
-        <td>{element.tags[key] ?? ""}</td>
-      {/each}
-    </tr>
+        {#each match.elements as element}
+          <td>
+            {#if showDiffs}
+              <TextDiff before={expectedValues[key] ?? ""} after={element.tags[key] ?? ""} />
+            {:else}
+              {element.tags[key] ?? ""}
+            {/if}
+          </td>
+        {/each}
+      </tr>
+    {/await}
   {/each}
   <tr class="actions">
     <td colspan="2"></td>

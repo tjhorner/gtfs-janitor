@@ -149,6 +149,9 @@
       <kbd>I</kbd> &mdash; Toggle aerial imagery
     </li>
     <li>
+      <kbd>S</kbd> &mdash; Toggle tag diffs
+    </li>
+    <li>
       <kbd>1-9</kbd> &mdash; Cycle through the actions for the corresponding option
     </li>
     <li>
@@ -171,7 +174,6 @@
     display: block;
     overflow-x: scroll;
     flex-shrink: 0;
-    font-family: monospace;
   }
 
   .split {
@@ -192,6 +194,10 @@
 
   .info h2 {
     margin-top: 0;
+  }
+  
+  .info p {
+    margin: 0 0 1em;
   }
 
   .info .controls {
