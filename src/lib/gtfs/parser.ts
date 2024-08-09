@@ -104,7 +104,7 @@ export async function importToRepository(
 
   await repository.trips.bulkAdd(trips)
 
-  progress?.("Importing stop times (this one can take a while)...")
+  progress?.("Importing stop times...")
 
   const tripStops = new Map<string, string[]>()
   await getStreamForEntry(entries, "stop_times.txt", {

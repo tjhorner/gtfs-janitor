@@ -1,6 +1,6 @@
 <script lang="ts">
   import { importProfile } from "$lib/stores/import-profile"
-  import { createEventDispatcher } from "svelte"
+  import { createEventDispatcher, onMount } from "svelte"
   import Center from "./Center.svelte"
   import { gtfsRepository } from "$lib/stores/gtfs-repository"
   import { liveQuery } from "dexie"
@@ -10,8 +10,19 @@
     done: void
   }>()
 
+  const rotatingMessages = [
+    "Importing can take up to a minute.",
+    "Seriously, there's a lot of data to import.",
+    "I swear things are still happening. Just give it a minute.",
+    "I'm not sure what's taking so long, but it's still working.",
+    "If you're still here after like 5 minutes, maybe something has gone wrong. Maybe check the browser console."
+  ]
+
+  let rotatingMessageTimeout: any
+
   let loading = false
   let progressMessage = "Starting GTFS import..."
+  let secondaryMessage = ""
   let stopCount = liveQuery(() => $gtfsRepository.stops.count())
 
   async function processUpload({ currentTarget }: { currentTarget: EventTarget & HTMLInputElement }) {
@@ -32,6 +43,17 @@
     }
 
     worker.postMessage({ gtfsBlob: currentTarget.files![0] })
+    rotateMessage()
+  }
+
+  function rotateMessage() {
+    if (rotatingMessages.length === 0) return
+
+    const msg = rotatingMessages[0]
+    secondaryMessage = msg
+    rotatingMessages.shift()
+
+    rotatingMessageTimeout = setTimeout(rotateMessage, 10000)
   }
 
   function changeProfile() {
@@ -48,6 +70,10 @@
     await $gtfsRepository.clearAll()
     clearingDb = false
   }
+
+  onMount(() => {
+    return () => clearTimeout(rotatingMessageTimeout)
+  })
 </script>
 
 <Center>
@@ -56,6 +82,10 @@
   {#if loading}
     <p>
       {progressMessage}
+    </p>
+
+    <p>
+      <em>{secondaryMessage}</em>
     </p>
   {:else}
     {#if $stopCount > 0}
