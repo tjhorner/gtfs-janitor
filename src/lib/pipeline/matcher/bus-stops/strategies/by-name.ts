@@ -1,6 +1,7 @@
 import type { Node } from "$lib/osm/overpass"
 import type { BusStopMatchingStrategy, MatchingStrategyResult } from "$lib/pipeline/matcher/bus-stops"
 import type { IGTFSStop } from "$lib/repository/gtfs/stop"
+import { abbreviateStreet } from "$lib/util/address-abbreviator"
 import { calculateDistanceMeters } from "$lib/util/geo-math"
 import memoize from "memoize"
 
@@ -9,19 +10,12 @@ const normalizeStopName = memoize((name?: string) => {
     return ""
   }
 
-  return name
-    .toLowerCase()
-    .replaceAll(/\bstreet\b/g, "st")
-    .replaceAll(/\bavenue\b/g, "ave")
-    .replaceAll(/\bboulevard\b/g, "blvd")
-    .replaceAll(/\broad\b/g, "rd")
-    .replaceAll(/\bdrive\b/g, "dr")
-    .replaceAll(/\blane\b/g, "ln")
-    .replaceAll(/\bcourt\b/g, "ct")
-    .replaceAll(/\bplace\b/g, "pl")
-    .replaceAll(/\bcircle\b/g, "cir")
-    .replaceAll(/\b(and|\/)\b/g, "&")
-    .replaceAll(/ +/g, " ")
+  return abbreviateStreet(name.toLowerCase())
+    .replace(/\bnorth/g, "n")
+    .replace(/\bsouth/g, "s")
+    .replace(/east\b/g, "e")
+    .replace(/west\b/g, "w")
+    .replace(/ +/g, " ")
     .trim()
 })
 
