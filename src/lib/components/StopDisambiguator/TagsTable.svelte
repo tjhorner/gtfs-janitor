@@ -156,6 +156,7 @@
         Diff:
         <SegmentedControl
           bind:value={diffMode}
+          selectedColor="#6d6d6d"
           options={[
             { label: "Off", value: "off" },
             { label: "Chars", value: "chars" },

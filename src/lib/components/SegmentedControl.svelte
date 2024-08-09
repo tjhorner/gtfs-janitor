@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let selectedColor: string = "#007bff"
   export let options: {
     label: string,
     value: string
@@ -33,7 +34,7 @@
   }
 
   .button:has(input:checked) {
-    background-color: #007bff;
+    background-color: var(--selected-color);
     color: white;
   }
 
@@ -53,7 +54,7 @@
   }
 </style>
 
-<div class="options">
+<div class="options" style="--selected-color: {selectedColor}">
   {#each options as option}
     <label
       class="button"
