@@ -78,6 +78,7 @@ export default class GTFSRepository extends Dexie {
       const routeIds = await this.trips
         .where("id")
         .anyOf(tripIds)
+        .distinct()
         .primaryKeys(pks => pks.map(pk => pk[1]))
 
       if (routeIds.length === 0) {
