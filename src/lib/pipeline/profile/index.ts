@@ -4,7 +4,11 @@ const importProfile = type({
   name: "string",
   candidateNodeFilter: "string",
   "disusedStopFilter?": "string",
-  stopTags: { "[string]": "string" }
+  stopTags: { "[string]": "string" },
+  "gtfsOverrides?": {
+    "routes?": { "[string]": { "[string]": "string" } },
+    "stops?": { "[string]": { "[string]": "string" } }
+  }
 })
 
 export type ImportProfile = typeof importProfile.tValidatedOut

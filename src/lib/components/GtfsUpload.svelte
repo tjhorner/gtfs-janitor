@@ -4,7 +4,7 @@
   import Center from "./Center.svelte"
   import { gtfsRepository } from "$lib/stores/gtfs-repository"
   import { liveQuery } from "dexie"
-  import type { ImportGTFSDataResponse } from "$lib/workers/import-gtfs-data"
+  import type { ImportGTFSDataRequest, ImportGTFSDataResponse } from "$lib/workers/import-gtfs-data"
 
   const dispatch = createEventDispatcher<{
     done: void
@@ -42,7 +42,11 @@
       loading = false
     }
 
-    worker.postMessage({ gtfsBlob: currentTarget.files![0] })
+    const request: ImportGTFSDataRequest = {
+      gtfsBlob: currentTarget.files![0],
+      overrides: $importProfile?.gtfsOverrides
+    }
+    worker.postMessage(request)
     rotateMessage()
   }
 

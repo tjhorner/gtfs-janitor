@@ -32,3 +32,20 @@ stopTags:
   operator:wikidata: "Q6411393"
   operator:wikipedia: "en:King County Metro"
   gtfs:feed: "US-WA-KCM"
+
+gtfsOverrides:
+  routes:
+    "100001": { route_type: "11" } # Route 1
+    "100089": { route_type: "11" } # Route 2
+    "100173": { route_type: "11" } # Route 3
+    "100219": { route_type: "11" } # Route 4
+    "100263": { route_type: "11" } # Route 7
+    "100002": { route_type: "11" } # Route 10
+    "100018": { route_type: "11" } # Route 12
+    "100028": { route_type: "11" } # Route 13
+    "100039": { route_type: "11" } # Route 14
+    "100210": { route_type: "11" } # Route 36
+    "100223": { route_type: "11" } # Route 43
+    "100224": { route_type: "11" } # Route 44
+    "100447": { route_type: "11" } # Route 49
+    "100264": { route_type: "11" } # Route 70

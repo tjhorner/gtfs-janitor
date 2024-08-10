@@ -3,6 +3,7 @@ import { ReadableWebToNodeStream } from "readable-web-to-node-stream"
 import csv from "csvtojson/v2"
 import type GTFSRepository from "$lib/repository/gtfs"
 import type { CSVParseParam } from "csvtojson/v2/Parameters"
+import type { ImportProfile } from "$lib/pipeline/profile"
 
 function getStreamForEntry(
   entries: Entry[],
@@ -45,6 +46,7 @@ function assertFloat(value: string) {
 
 export async function importToRepository(
   repository: GTFSRepository,
+  overrides: ImportProfile["gtfsOverrides"],
   blob: Blob,
   progress?: (message: string) => void
 ) {
@@ -57,36 +59,49 @@ export async function importToRepository(
 
   progress?.("Importing stops...")
 
-  const stops = await getTransformedCsvForEntry(entries, "stops.txt", stop => ({
-    id: stop.stop_id,
-    code: stop.stop_code,
-    name: stop.stop_name,
-    desc: stop.stop_desc,
-    lat: assertFloat(stop.stop_lat),
-    lon: assertFloat(stop.stop_lon),
-    zoneId: stop.zone_id,
-    url: stop.stop_url,
-    locationType: stop.location_type,
-    parentStation: stop.parent_station,
-    timezone: stop.stop_timezone,
-    wheelchairBoarding: stop.wheelchair_boarding
-  }))
+  const stops = await getTransformedCsvForEntry(entries, "stops.txt", stop => {
+    if (overrides?.stops && overrides.stops[stop.stop_id]) {
+      stop = { ...stop, ...overrides.stops[stop.stop_id] }
+    }
+
+    return {
+      id: stop.stop_id,
+      code: stop.stop_code,
+      name: stop.stop_name,
+      desc: stop.stop_desc,
+      lat: assertFloat(stop.stop_lat),
+      lon: assertFloat(stop.stop_lon),
+      zoneId: stop.zone_id,
+      url: stop.stop_url,
+      locationType: stop.location_type,
+      parentStation: stop.parent_station,
+      timezone: stop.stop_timezone,
+      wheelchairBoarding: stop.wheelchair_boarding
+    }
+  })
 
   await repository.stops.bulkAdd(stops)
 
   progress?.("Importing routes...")
 
-  const routes = await getTransformedCsvForEntry(entries, "routes.txt", route => ({
-    id: route.route_id,
-    agencyId: route.agency_id,
-    shortName: route.route_short_name,
-    longName: route.route_long_name,
-    desc: route.route_desc,
-    type: route.route_type,
-    url: route.route_url,
-    color: route.route_color,
-    textColor: route.route_text_color
-  }))
+  const routes = await getTransformedCsvForEntry(entries, "routes.txt", route => {
+    if (overrides?.routes && overrides.routes[route.route_id]) {
+      route = { ...route, ...overrides.routes[route.route_id] }
+    }
+
+    return {
+      id: route.route_id,
+      agencyId: route.agency_id,
+      shortName: route.route_short_name,
+      longName: route.route_long_name,
+      desc: route.route_desc,
+      type: route.route_type,
+      url: route.route_url,
+      color: route.route_color,
+      textColor: route.route_text_color,
+      sortOrder: route.route_sort_order
+    }
+  })
 
   await repository.routes.bulkAdd(routes)
 

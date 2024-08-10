@@ -52,26 +52,36 @@ export function tagsForOsmBusStop(stop: IGTFSStop, routesServingStop: IGTFSRoute
 
   const routeTypesAtStop = new Set(routesServingStop.map(route => route.type))
 
-  const busTags = (
-    routeTypesAtStop.has(GTFSRouteType.BUS) ? {
-      "bus": "yes",
-      "highway": "bus_stop"
-    } : { }
-  )
+  const additionalTagsForRouteType: { [key: string]: string } = { }
 
-  const tramTags = (
-    routeTypesAtStop.has(GTFSRouteType.TRAM) ? {
-      "tram": "yes",
-      "railway": "tram_stop"
-    } : { }
-  )
+  if (routeTypesAtStop.has(GTFSRouteType.BUS)) {
+    additionalTagsForRouteType["bus"] = "yes"
+    additionalTagsForRouteType["highway"] = "bus_stop"
+  }
 
-  const ferryTags = (
-    routeTypesAtStop.has(GTFSRouteType.FERRY) ? {
-      "ferry": "yes",
-      "amenity": "ferry_terminal"
-    } : { }
-  )
+  if (routeTypesAtStop.has(GTFSRouteType.TROLLEYBUS)) {
+    additionalTagsForRouteType["trolleybus"] = "yes"
+    additionalTagsForRouteType["highway"] = "bus_stop"
+  }
+
+  if (routeTypesAtStop.has(GTFSRouteType.TRAM)) {
+    additionalTagsForRouteType["tram"] = "yes"
+    additionalTagsForRouteType["railway"] = "tram_stop"
+  }
+
+  if (routeTypesAtStop.has(GTFSRouteType.FERRY)) {
+    additionalTagsForRouteType["ferry"] = "yes"
+    additionalTagsForRouteType["amenity"] = "ferry_terminal"
+  }
+
+  if (routeTypesAtStop.has(GTFSRouteType.GONDOLA)) {
+    additionalTagsForRouteType["aerialway"] = "station"
+  }
+
+  if (routeTypesAtStop.has(GTFSRouteType.FUNICULAR)) {
+    additionalTagsForRouteType["railway"] = "station"
+    additionalTagsForRouteType["station"] = "funicular"
+  }
 
   return flush({
     "name": sanitizedName,
@@ -80,9 +90,7 @@ export function tagsForOsmBusStop(stop: IGTFSStop, routesServingStop: IGTFSRoute
     "route_ref": getRouteRef(routesServingStop),
     "gtfs:stop_id": stop.id,
     "wheelchair": wheelchairTag,
-    ...busTags,
-    ...tramTags,
-    ...ferryTags
+    ...additionalTagsForRouteType
   })
 }
 

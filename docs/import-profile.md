@@ -45,6 +45,23 @@ stopTags:
   operator:wikidata: "Q6411393"
   operator:wikipedia: "en:King County Metro"
   gtfs:feed: "US-WA-KCM"
+
+gtfsOverrides:
+  routes:
+    "100001": { route_type: "11" } # Route 1
+    "100089": { route_type: "11" } # Route 2
+    "100173": { route_type: "11" } # Route 3
+    "100219": { route_type: "11" } # Route 4
+    "100263": { route_type: "11" } # Route 7
+    "100002": { route_type: "11" } # Route 10
+    "100018": { route_type: "11" } # Route 12
+    "100028": { route_type: "11" } # Route 13
+    "100039": { route_type: "11" } # Route 14
+    "100210": { route_type: "11" } # Route 36
+    "100223": { route_type: "11" } # Route 43
+    "100224": { route_type: "11" } # Route 44
+    "100447": { route_type: "11" } # Route 49
+    "100264": { route_type: "11" } # Route 70
 ```
 
 For more examples, see the [import profile presets directory](../src/lib/pipeline/profile/presets).
@@ -137,3 +154,21 @@ stopTags:
   name: "{{ stop_name | title }}"
   website: "https://example.com/stops/{{ stop_id }}"
 ```
+
+### `gtfsOverrides`
+
+_Optional_
+
+You can use this option to override certain fields in the GTFS data. For example, the King County Metro import profile uses it to set the correct `route_type` for routes that are indicated as bus routes in the GTFS data but are actually trolleybus routes.
+
+#### `gtfsOverrides.routes`
+
+_Optional_
+
+A mapping of route IDs to fields that should be overridden. The keys are the GTFS `route_id` values and the values are objects with the fields that should be overridden.
+
+#### `gtfsOverrides.stops`
+
+_Optional_
+
+A mapping of stop IDs to fields that should be overridden. The keys are the GTFS `stop_id` values and the values are objects with the fields that should be overridden.

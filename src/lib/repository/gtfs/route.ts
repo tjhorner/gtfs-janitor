@@ -9,7 +9,9 @@ export const GTFSRouteType = {
   FERRY: "4",
   CABLE_CAR: "5",
   GONDOLA: "6",
-  FUNICULAR: "7"
+  FUNICULAR: "7",
+  TROLLEYBUS: "11",
+  MONORAIL: "12"
 } as const
 
 export interface IGTFSRoute {
