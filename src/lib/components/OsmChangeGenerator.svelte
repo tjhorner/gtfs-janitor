@@ -156,8 +156,13 @@
     </p>
 
     <p>
-      Please carefully review the changes in an external editor before uploading
-      them to OpenStreetMap.
+      Please carefully review the changes in an external editor, take care to
+      follow the
+      <a
+        href="https://wiki.openstreetmap.org/wiki/Automated_Edits_code_of_conduct"
+        target="_blank"
+      >automated edits code of conduct</a>,
+      and discuss these changes with your local OSM community before uploading.
     </p>
 
     <button on:click={exportFile}>
