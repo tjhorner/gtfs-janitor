@@ -48,20 +48,21 @@ stopTags:
 
 gtfsOverrides:
   routes:
-    "100001": { route_type: "11" } # Route 1
-    "100089": { route_type: "11" } # Route 2
-    "100173": { route_type: "11" } # Route 3
-    "100219": { route_type: "11" } # Route 4
-    "100263": { route_type: "11" } # Route 7
-    "100002": { route_type: "11" } # Route 10
-    "100018": { route_type: "11" } # Route 12
-    "100028": { route_type: "11" } # Route 13
-    "100039": { route_type: "11" } # Route 14
-    "100210": { route_type: "11" } # Route 36
-    "100223": { route_type: "11" } # Route 43
-    "100224": { route_type: "11" } # Route 44
-    "100447": { route_type: "11" } # Route 49
-    "100264": { route_type: "11" } # Route 70
+    # Trolleybus route overrides
+    100001: { route_type: "11" } # Route 1
+    100089: { route_type: "11" } # Route 2
+    100173: { route_type: "11" } # Route 3
+    100219: { route_type: "11" } # Route 4
+    100263: { route_type: "11" } # Route 7
+    100002: { route_type: "11" } # Route 10
+    100018: { route_type: "11" } # Route 12
+    100028: { route_type: "11" } # Route 13
+    100039: { route_type: "11" } # Route 14
+    100210: { route_type: "11" } # Route 36
+    100223: { route_type: "11" } # Route 43
+    100224: { route_type: "11" } # Route 44
+    100447: { route_type: "11" } # Route 49
+    100264: { route_type: "11" } # Route 70
 ```
 
 For more examples, see the [import profile presets directory](../src/lib/pipeline/profile/presets).
@@ -165,10 +166,10 @@ You can use this option to override certain fields in the GTFS data. For example
 
 _Optional_
 
-A mapping of route IDs to fields that should be overridden. The keys are the GTFS `route_id` values and the values are objects with the fields that should be overridden.
+A mapping of route IDs to fields that should be overridden. The keys are the GTFS `route_id` values and the values are objects with the [fields from `routes.txt`](https://gtfs.org/schedule/reference/#routestxt) that should be overridden.
 
 #### `gtfsOverrides.stops`
 
 _Optional_
 
-A mapping of stop IDs to fields that should be overridden. The keys are the GTFS `stop_id` values and the values are objects with the fields that should be overridden.
+A mapping of stop IDs to fields that should be overridden. The keys are the GTFS `stop_id` values and the values are objects with the [fields from `stops.txt`](https://gtfs.org/schedule/reference/#stopstxt) that should be overridden.
