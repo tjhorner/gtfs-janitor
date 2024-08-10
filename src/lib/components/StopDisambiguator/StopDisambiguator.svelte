@@ -77,7 +77,7 @@
 </script>
 
 <Splitpanes style="height: 100%">
-  <Pane size={50} maxSize={80} minSize={35}>
+  <Pane size={60} maxSize={80} minSize={35}>
     <div class="info">
       <div>
         <h2>{matchedStop.stop.name} &mdash; <code>{matchedStop.stop.id}</code></h2>
@@ -133,7 +133,7 @@
     </div>
   </Pane>
 
-  <Pane size={50}>
+  <Pane size={40}>
     <DisambiguatorMap
       {selectedActions}
       {matchedStop}
@@ -187,6 +187,7 @@
     flex-direction: column;
     padding: 1rem;
     overflow: scroll;
+    height: 100%;
   }
 
   .info h2 {
