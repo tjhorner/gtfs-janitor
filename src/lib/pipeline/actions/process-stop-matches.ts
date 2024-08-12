@@ -90,6 +90,7 @@ export function tagsForOsmBusStop(stop: IGTFSStop, routesServingStop: IGTFSRoute
     "route_ref": getRouteRef(routesServingStop),
     "gtfs:stop_id": stop.id,
     "wheelchair": wheelchairTag,
+    "website": stop.url.trim().length === 0 ? undefined : stop.url.trim(),
     ...additionalTagsForRouteType
   })
 }

@@ -60,7 +60,7 @@ export async function importToRepository(
   progress?.("Importing stops...")
 
   const stops = await getTransformedCsvForEntry(entries, "stops.txt", stop => {
-    if (overrides?.stops && overrides.stops[stop.stop_id]) {
+    if (overrides?.stops?.[stop.stop_id]) {
       stop = { ...stop, ...overrides.stops[stop.stop_id] }
     }
 
