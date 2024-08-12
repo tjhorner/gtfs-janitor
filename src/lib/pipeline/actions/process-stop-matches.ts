@@ -46,7 +46,7 @@ function getRouteRef(routes: IGTFSRoute[]) {
     .join(";")
 }
 
-export function tagsForOsmBusStop(stop: IGTFSStop, routesServingStop: IGTFSRoute[]) {
+export function tagsForOsmStop(stop: IGTFSStop, routesServingStop: IGTFSRoute[]) {
   const sanitizedName = stop.name.replaceAll(/ +/g, " ").trim()
   const wheelchairTag = getWheelchairTag(stop.wheelchairBoarding)
 
@@ -104,6 +104,30 @@ function renderAdditionalTags(stop: IGTFSStop, tags: [ string, nunjucks.Template
   }, { })
 }
 
+function removeLifecyclePrefixes(tags: { [key: string]: string | undefined }) {
+  const lifecyclePrefixes = [
+    "disused:",
+    "abandoned:",
+    "razed:",
+    "demolished:",
+    "removed:",
+    "razed:",
+    "ruins:",
+    "destroyed:",
+    "proposed:",
+    "planned:",
+    "construction:"
+  ]
+
+  for (const key of Object.keys(tags)) {
+    if (lifecyclePrefixes.some(prefix => key.startsWith(prefix))) {
+      delete tags[key]
+    }
+  }
+
+  return tags
+}
+
 export interface ProcessStopMatchesOptions {
   createNodes?: boolean
   updateNodes?: boolean,
@@ -142,7 +166,7 @@ export async function processStopMatches(
         changeset: -1,
         version: 1,
         tags: {
-          ...tagsForOsmBusStop(stop, routesServingStop),
+          ...tagsForOsmStop(stop, routesServingStop),
           "public_transport": "platform",
           ...renderAdditionalTags(stop, compiledTags)
         }
@@ -169,13 +193,10 @@ export async function processStopMatches(
     }
 
     modifiedNode.tags = {
-      ...modifiedNode.tags,
-      ...tagsForOsmBusStop(stop, routesServingStop),
+      ...removeLifecyclePrefixes(modifiedNode.tags),
+      ...tagsForOsmStop(stop, routesServingStop),
       ...renderAdditionalTags(stop, compiledTags)
     }
-
-    delete modifiedNode.tags["disused:highway"]
-    delete modifiedNode.tags["disused:public_transport"]
 
     osmChange.modifyElement(modifiedNode)
   }

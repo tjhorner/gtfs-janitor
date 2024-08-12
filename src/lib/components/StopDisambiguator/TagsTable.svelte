@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tagsForOsmBusStop } from "$lib/pipeline/actions/process-stop-matches"
+  import { tagsForOsmStop } from "$lib/pipeline/actions/process-stop-matches"
   import type { DisambiguationAction } from "$lib/pipeline/disambiguator/session"
   import type { AmbiguousBusStopMatch, MatchedBusStop } from "$lib/pipeline/matcher/bus-stops"
   import { gtfsRepository } from "$lib/stores/gtfs-repository"
@@ -31,7 +31,7 @@
 
   async function getExpectedTags(stopId: string) {
     const routesServingStop = await $gtfsRepository.getRoutesServingStop(stopId)
-    return tagsForOsmBusStop(matchedStop.stop, routesServingStop)
+    return tagsForOsmStop(matchedStop.stop, routesServingStop)
   }
 
   function handleKeyboardShortcuts(e: KeyboardEvent) {
