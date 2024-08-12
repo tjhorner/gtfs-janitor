@@ -17,7 +17,7 @@ export function removeOldStops(
   for (const node of nodesToDelete) {
     const modifiedNode = structuredClone(node)
 
-    const addLifecyclePrefixToKeys = [ "highway", "public_transport" ]
+    const addLifecyclePrefixToKeys = [ "highway", "railway", "aerialway", "amenity", "public_transport" ]
     for (const key of addLifecyclePrefixToKeys) {
       if (modifiedNode.tags[key]) {
         modifiedNode.tags[`disused:${key}`] = modifiedNode.tags[key]
