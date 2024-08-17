@@ -26,7 +26,7 @@ export class OsmChangeFile implements OsmChanges {
         {
           _attr: {
             id: element.id,
-            version: "1",
+            version: element.version.toString(),
             ...(isNode(element) ? { lat: element.lat, lon: element.lon } : { })
           }
         },
