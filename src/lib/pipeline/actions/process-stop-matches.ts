@@ -139,7 +139,8 @@ function getNewNodeId(stopId: string) {
 }
 
 function areTagsDifferent(before: Record<string, string | undefined>, after: Record<string, string | undefined>) {
-  for (const key of Object.keys(before)) {
+  const allKeys = new Set([ ...Object.keys(before), ...Object.keys(after) ])
+  for (const key of allKeys) {
     if (before[key] !== after[key]) return true
   }
 
