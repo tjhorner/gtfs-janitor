@@ -138,6 +138,14 @@ function getNewNodeId(stopId: string) {
   return -Math.abs(crc32(stopId))
 }
 
+function areTagsDifferent(before: Record<string, string | undefined>, after: Record<string, string | undefined>) {
+  for (const key of Object.keys(before)) {
+    if (before[key] !== after[key]) return true
+  }
+
+  return false
+}
+
 export async function processStopMatches(
   stopMatches: MatchedBusStop[],
   osmChange: OsmChangeFile,
@@ -198,6 +206,12 @@ export async function processStopMatches(
       ...renderAdditionalTags(stop, compiledTags)
     }
 
-    osmChange.modifyElement(modifiedNode)
+    if (
+      stopMatch.match.element.lat !== modifiedNode.lat ||
+      stopMatch.match.element.lon !== modifiedNode.lon ||
+      areTagsDifferent(stopMatch.match.element.tags, modifiedNode.tags)
+    ) {
+      osmChange.modifyElement(modifiedNode)
+    }
   }
 }
