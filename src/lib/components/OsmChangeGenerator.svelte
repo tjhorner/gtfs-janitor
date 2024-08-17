@@ -41,7 +41,10 @@
       osmChangeWorker.postMessage({
         disambiguationResults: results,
         disusedStopCandidates: await disusedStopCandidates,
-        opts
+        opts: {
+          ...opts,
+          additionalTags: $importProfile?.stopTags ?? { }
+        }
       } as GenerateOsmChangeRequest)
     })
   }
