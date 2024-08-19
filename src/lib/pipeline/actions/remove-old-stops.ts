@@ -1,6 +1,7 @@
 import type { OsmChangeFile } from "$lib/osm/osmchange"
 import type { Node } from "$lib/osm/overpass"
 import { isDefiniteMatch, type MatchedBusStop } from "../matcher/bus-stops"
+import { areTagsDifferent } from "./process-stop-matches"
 
 export function removeOldStops(
   stopMatches: MatchedBusStop[],
@@ -25,6 +26,8 @@ export function removeOldStops(
       }
     }
 
-    osmChange.modifyElement(modifiedNode)
+    if (areTagsDifferent(node.tags, modifiedNode.tags)) {
+      osmChange.modifyElement(modifiedNode)
+    }
   }
 }

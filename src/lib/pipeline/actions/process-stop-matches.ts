@@ -138,7 +138,7 @@ function getNewNodeId(stopId: string) {
   return -Math.abs(crc32(stopId))
 }
 
-function areTagsDifferent(before: Record<string, string | undefined>, after: Record<string, string | undefined>) {
+export function areTagsDifferent(before: Record<string, string | undefined>, after: Record<string, string | undefined>) {
   const allKeys = new Set([ ...Object.keys(before), ...Object.keys(after) ])
   for (const key of allKeys) {
     if (before[key] !== after[key]) return true
