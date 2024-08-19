@@ -9,6 +9,7 @@ import { crc32 } from "$lib/util/crc32"
 import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import { GTFSRouteType, type IGTFSRoute } from "$lib/repository/gtfs/route"
 import GTFSRepository from "$lib/repository/gtfs"
+import { areNodesDifferent, areTagsDifferent } from "$lib/osm/util"
 
 function getWheelchairTag(wheelchairBoarding: string) {
   switch (wheelchairBoarding) {
@@ -138,15 +139,6 @@ function getNewNodeId(stopId: string) {
   return -Math.abs(crc32(stopId))
 }
 
-export function areTagsDifferent(before: Record<string, string | undefined>, after: Record<string, string | undefined>) {
-  const allKeys = new Set([ ...Object.keys(before), ...Object.keys(after) ])
-  for (const key of allKeys) {
-    if (before[key] !== after[key]) return true
-  }
-
-  return false
-}
-
 export async function processStopMatches(
   stopMatches: MatchedBusStop[],
   osmChange: OsmChangeFile,
@@ -207,11 +199,7 @@ export async function processStopMatches(
       ...renderAdditionalTags(stop, compiledTags)
     }
 
-    if (
-      stopMatch.match.element.lat !== modifiedNode.lat ||
-      stopMatch.match.element.lon !== modifiedNode.lon ||
-      areTagsDifferent(stopMatch.match.element.tags, modifiedNode.tags)
-    ) {
+    if (areNodesDifferent(stopMatch.match.element, modifiedNode)) {
       osmChange.modifyElement(modifiedNode)
     }
   }
