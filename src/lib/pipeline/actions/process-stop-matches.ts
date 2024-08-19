@@ -41,7 +41,7 @@ function getLocalRef(name: string) {
 
 function getRouteRef(routes: IGTFSRoute[]) {
   if (routes.length === 0) return undefined
-  return naturalSort(routes, [ "route_short_name" ])
+  return naturalSort(routes, [ "shortName" ])
     .map(route => route.shortName.trim())
     .join(";")
 }
