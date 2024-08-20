@@ -14,7 +14,7 @@ function makeAmbiguousMatch(props: Partial<AmbiguousBusStopMatch> = { }): Ambigu
 }
 
 describe("applyDisambiguationActions", () => {
-  it("applies actions to a given ambiguous match", () => {
+  it("applies the match action to a given candidate node", () => {
     // Assert
     let session = startDisambiguationSession([
       {
@@ -33,6 +33,24 @@ describe("applyDisambiguationActions", () => {
 
     const match = session.results.matches[0]?.match as DefiniteBusStopMatch<string>
     expect(match.element).toMatchObject({ id: 1 })
+  })
+
+  it("marks the match as null if no candidate is chosen", () => {
+    // Assert
+    let session = startDisambiguationSession([
+      {
+        stop: makeTestStop(),
+        match: makeAmbiguousMatch({
+          elements: [ makeTestNode({ id: 1 }), makeTestNode({ id: 2 }) ]
+        })
+      }
+    ])
+
+    // Act
+    session = applyDisambiguationActions(session, 0, [ "ignore", "ignore" ])
+
+    // Assert
+    expect(session.results.matches[0]?.match).toBeNull()
   })
 
   it("removes matched or deleted node as candidate for other ambiguous matches", () => {
@@ -124,6 +142,26 @@ describe("applyDisambiguationActions", () => {
     expect(session.results.deletions[0]).toMatchObject({ id: 2 })
   })
 
+  it("does nothing if the match is already definite", () => {
+    // Assert
+    let session = startDisambiguationSession([
+      {
+        stop: makeTestStop(),
+        match: {
+          ambiguous: false,
+          matchedBy: "test",
+          element: makeTestNode({ id: 1 })
+        }
+      }
+    ])
+
+    // Act
+    session = applyDisambiguationActions(session, 0, [ "match", "ignore" ])
+
+    // Assert
+    expect(session.results.matches[0]?.match?.ambiguous).toEqual(false)
+  })
+
   it("adds to the undo stack when an action is taken", () => {
     // Assert
     let session = startDisambiguationSession([
@@ -172,5 +210,24 @@ describe("undoDisambiguationActions", () => {
     expect(sessionAfterUndo.results).toMatchObject(initialResults)
     expect(sessionAfterUndo.undoStack).toHaveLength(0)
     expect(actions).toEqual([ "match", "delete" ])
+  })
+
+  it("does nothing if the undo stack is empty", () => {
+    // Assert
+    let session = startDisambiguationSession([
+      {
+        stop: makeTestStop(),
+        match: makeAmbiguousMatch({
+          elements: [ makeTestNode({ id: 1 }), makeTestNode({ id: 2 }) ]
+        })
+      }
+    ])
+
+    // Act
+    const [ sessionAfterUndo, actions ] = undoDisambiguationActions(session)
+
+    // Assert
+    expect(sessionAfterUndo).toBe(session)
+    expect(actions).toBeNull()
   })
 })

@@ -1,6 +1,6 @@
 import { OsmChangeFile, type OsmChanges } from "$lib/osm/osmchange"
 import type { Node } from "$lib/osm/overpass"
-import { applyDisambiguationActions } from "$lib/pipeline/actions/apply-disambiguation-results"
+import { applyDisambiguationResults } from "$lib/pipeline/actions/apply-disambiguation-results"
 import { processStopMatches } from "$lib/pipeline/actions/process-stop-matches"
 import { removeOldStops } from "$lib/pipeline/actions/remove-old-stops"
 import type { DisambiguationResults } from "$lib/pipeline/disambiguator/session"
@@ -37,7 +37,7 @@ const generateWithRequest = memoize(async (req: GenerateOsmChangeRequest) => {
   const file = new OsmChangeFile()
 
   if (opts.removeStagedForDeletion) {
-    applyDisambiguationActions(disambiguationResults, file)
+    applyDisambiguationResults(disambiguationResults, file)
   }
 
   console.time("processStopMatches")
