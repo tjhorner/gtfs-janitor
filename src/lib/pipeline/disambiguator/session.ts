@@ -36,6 +36,13 @@ function removeNodeFromMatches(draft: WritableDraft<DisambiguationResults>, node
     if (nodeIndex !== -1) {
       match.elements.splice(nodeIndex, 1)
     }
+  }
+}
+
+function autoDisambiguateRemainingMatches(draft: WritableDraft<DisambiguationResults>) {
+  for (const matchedStop of draft.matches) {
+    const match = matchedStop.match
+    if (!match?.ambiguous) continue
 
     if (match.elements.length === 0) {
       matchedStop.match = null
@@ -85,6 +92,8 @@ export function applyDisambiguationActions(
         removeNodeFromMatches(draft, matchCandidates[index].id)
       }
     })
+
+    autoDisambiguateRemainingMatches(draft)
   })
 
   session.results = nextState

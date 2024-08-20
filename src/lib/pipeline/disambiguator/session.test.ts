@@ -70,7 +70,7 @@ describe("applyDisambiguationActions", () => {
     expect(match.elements).not.toContainEqual(expect.objectContaining({ id: 3 }))
   })
 
-  it("automatically disambiguates matches if there is only a single node remaining", () => {
+  it("automatically disambiguates matches after removal of candidates", () => {
     // Assert
     let session = startDisambiguationSession([
       {
@@ -84,18 +84,25 @@ describe("applyDisambiguationActions", () => {
         match: makeAmbiguousMatch({
           elements: [ makeTestNode({ id: 1 }), makeTestNode({ id: 2 }) ]
         })
+      },
+      {
+        stop: makeTestStop(),
+        match: makeAmbiguousMatch({
+          elements: [ makeTestNode({ id: 1 }), makeTestNode({ id: 2 }), makeTestNode({ id: 3 }) ]
+        })
       }
     ])
 
     // Act
-    session = applyDisambiguationActions(session, 0, [ "match", "ignore" ])
+    session = applyDisambiguationActions(session, 0, [ "match", "delete" ])
 
     // Assert
     expect(session.results.matches[0]?.match?.ambiguous).toEqual(false)
-    expect(session.results.matches[1]?.match?.ambiguous).toEqual(false)
+    expect(session.results.matches[1]?.match).toBeNull()
+    expect(session.results.matches[2]?.match?.ambiguous).toEqual(false)
 
-    const match = session.results.matches[1]?.match as DefiniteBusStopMatch<string>
-    expect(match.element).toMatchObject({ id: 2 })
+    const match = session.results.matches[2]?.match as DefiniteBusStopMatch<string>
+    expect(match.element).toMatchObject({ id: 3 })
   })
 
   it("records deleted nodes in the session", () => {
