@@ -12,6 +12,7 @@ export default defineConfig({
 
     test: {
         include: ['src/**/*.{test,spec}.{js,ts}'],
+        setupFiles: ['src/hooks.ts'],
         coverage: {
             provider: 'istanbul',
             include: ['src/**/*.{js,ts}'],
