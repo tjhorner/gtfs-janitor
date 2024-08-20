@@ -9,7 +9,7 @@ import { crc32 } from "$lib/util/crc32"
 import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import { GTFSRouteType, type IGTFSRoute } from "$lib/repository/gtfs/route"
 import GTFSRepository from "$lib/repository/gtfs"
-import { areNodesDifferent, areTagsDifferent } from "$lib/osm/util"
+import { areNodesDifferent } from "$lib/osm/util"
 
 function getWheelchairTag(wheelchairBoarding: string) {
   switch (wheelchairBoarding) {
@@ -105,7 +105,7 @@ function renderAdditionalTags(stop: IGTFSStop, tags: [ string, nunjucks.Template
   }, { })
 }
 
-function removeLifecyclePrefixes(tags: { [key: string]: string | undefined }) {
+export function removeLifecyclePrefixes(tags: { [key: string]: string | undefined }) {
   const lifecyclePrefixes = [
     "disused:",
     "abandoned:",
