@@ -8,7 +8,7 @@ import { orderBy as naturalSort } from "natural-orderby"
 import { crc32 } from "$lib/util/crc32"
 import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import { GTFSRouteType, type IGTFSRoute } from "$lib/repository/gtfs/route"
-import GTFSRepository from "$lib/repository/gtfs"
+import GTFSRepository, { type IGTFSRepository } from "$lib/repository/gtfs"
 import { areNodesDifferent } from "$lib/osm/util"
 
 function getWheelchairTag(wheelchairBoarding: string) {
@@ -24,10 +24,10 @@ function getWheelchairTag(wheelchairBoarding: string) {
 }
 
 function preCompileTagTemplates(tags: { [key: string]: string }): [ string, nunjucks.Template | string ][] {
-  nunjucks.configure({ autoescape: false })
+  const env = nunjucks.configure({ autoescape: false })
   return Object.entries(tags).map(([key, value]) => {
     const isTemplate = value.includes("{{") || value.includes("{%")
-    return isTemplate ? [ key, nunjucks.compile(value) ] : [ key, value ]
+    return isTemplate ? [ key, nunjucks.compile(value, env) ] : [ key, value ]
   })
 }
 
@@ -142,7 +142,7 @@ function getNewNodeId(stopId: string) {
 export async function processStopMatches(
   stopMatches: MatchedBusStop[],
   osmChange: OsmChangeFile,
-  repository: GTFSRepository,
+  repository: IGTFSRepository,
   options: ProcessStopMatchesOptions = { }
 ) {
   const compiledTags = preCompileTagTemplates(options.additionalTags ?? { })

@@ -1,36 +1,39 @@
-import type { IGTFSStop } from "$lib/repository/gtfs/stop"
-import { describe, expect, it } from "vitest"
-import { removeLifecyclePrefixes, tagsForOsmStop } from "./process-stop-matches"
+import { OsmChangeFile } from "$lib/osm/osmchange"
+import type { Node } from "$lib/osm/overpass"
 import { GTFSRouteType, type IGTFSRoute } from "$lib/repository/gtfs/route"
+import type { IGTFSStop } from "$lib/repository/gtfs/stop"
+import { describe, expect, it, vi } from "vitest"
+import type { MatchedBusStop } from "../matcher/bus-stops"
+import { processStopMatches, removeLifecyclePrefixes, tagsForOsmStop } from "./process-stop-matches"
+
+const fullTestStop: IGTFSStop = Object.freeze({
+  id: "12345",
+  code: "54321",
+  name: "Main St & 1st Ave",
+  desc: "Main Street and 1st Avenue",
+  lat: 47.676731074603886,
+  lon: -122.12513655172663,
+  zoneId: "123",
+  url: "http://example.com",
+  locationType: "0",
+  parentStation: "",
+  timezone: "America/Los_Angeles",
+  wheelchairBoarding: "1"
+})
+
+const fullTestRoute: IGTFSRoute = Object.freeze({
+  id: "1",
+  agencyId: "1",
+  shortName: "1",
+  longName: "Route 1",
+  desc: "Route 1",
+  type: GTFSRouteType.BUS,
+  color: "FF0000",
+  textColor: "FFFFFF",
+  url: ""
+})
 
 describe("tagsForOsmStop", () => {
-  const fullTestStop: IGTFSStop = Object.freeze({
-    id: "12345",
-    code: "54321",
-    name: "Main St & 1st Ave",
-    desc: "Main Street and 1st Avenue",
-    lat: 40.712345,
-    lon: -74.123456,
-    zoneId: "123",
-    url: "http://example.com",
-    locationType: "0",
-    parentStation: "",
-    timezone: "America/Los_Angeles",
-    wheelchairBoarding: "1"
-  })
-
-  const fullTestRoute: IGTFSRoute = Object.freeze({
-    id: "1",
-    agencyId: "1",
-    shortName: "1",
-    longName: "Route 1",
-    desc: "Route 1",
-    type: GTFSRouteType.BUS,
-    color: "FF0000",
-    textColor: "FFFFFF",
-    url: ""
-  })
-
   it("should return the correct tags for a given GTFS stop", () => {
     // Act
     const tags = tagsForOsmStop(fullTestStop, [ ])
@@ -158,5 +161,198 @@ describe("removeLifecyclePrefixes", () => {
 
     // Assert
     expect(cleanedTags).toEqual({ })
+  })
+})
+
+describe("processStopMatches", () => {
+  const mockRepository = {
+    getRoutesForAllStopIds: vi.fn(() => Promise.resolve(new Map()))
+  }
+
+  const definiteMatch = Object.freeze({
+    stop: fullTestStop,
+    match: {
+      ambiguous: false,
+      matchedBy: "test",
+      element: {
+        type: "node",
+        id: 12345,
+        lat: 0,
+        lon: 0,
+        changeset: 0,
+        version: 1,
+        tags: { }
+      }
+    }
+  } as const)
+
+  it("should create new nodes for unmatched stops", async () => {
+    // Arrange
+    const osmChange = new OsmChangeFile()
+    const stopMatches: MatchedBusStop[] = [
+      { stop: fullTestStop, match: null }
+    ]
+
+    // Act
+    await processStopMatches(stopMatches, osmChange, mockRepository, { createNodes: true })
+
+    // Assert
+    expect(osmChange.additions).toHaveLength(1)
+
+    const node = osmChange.additions[0] as Node
+    expect(node.id).toBeLessThan(0)
+    expect(node.lat).toEqual(47.676731074603886)
+    expect(node.lon).toEqual(-122.12513655172663)
+    expect(node.tags).toEqual({
+      "public_transport": "platform",
+      "name": "Main St & 1st Ave",
+      "ref": "54321",
+      "gtfs:stop_id": "12345",
+      "wheelchair": "yes",
+      "website": "http://example.com"
+    })
+  })
+
+  it("should not create new nodes for unmatched stops if createNodes is not set", async () => {
+    // Arrange
+    const osmChange = new OsmChangeFile()
+    const stopMatches: MatchedBusStop[] = [
+      { stop: fullTestStop, match: null }
+    ]
+
+    // Act
+    await processStopMatches(stopMatches, osmChange, mockRepository, { })
+
+    // Assert
+    expect(osmChange.additions).toHaveLength(0)
+  })
+
+  it("should modify existing nodes that have been matched to stops", async () => {
+    // Arrange
+    const osmChange = new OsmChangeFile()
+    const stopMatches: MatchedBusStop[] = [ definiteMatch ]
+
+    // Act
+    await processStopMatches(stopMatches, osmChange, mockRepository, { updateNodes: true })
+
+    // Assert
+    expect(osmChange.modifications).toHaveLength(1)
+  })
+
+  it("should not modify existing nodes if updateNodes is not set", async () => {
+    // Arrange
+    const osmChange = new OsmChangeFile()
+    const stopMatches: MatchedBusStop[] = [ definiteMatch ]
+
+    // Act
+    await processStopMatches(stopMatches, osmChange, mockRepository, { })
+
+    // Assert
+    expect(osmChange.modifications).toHaveLength(0)
+  })
+
+  it("should not modify existing nodes if tags don't need to change", async () => {
+    // Arrange
+    const osmChange = new OsmChangeFile()
+    const stopMatches: MatchedBusStop[] = [
+      {
+        stop: fullTestStop,
+        match: {
+          ...definiteMatch.match,
+          element: {
+            ...definiteMatch.match.element,
+            lat: 47.676731074603886,
+            lon: -122.12513655172663,
+            tags: {
+              "name": "Main St & 1st Ave",
+              "ref": "54321",
+              "gtfs:stop_id": "12345",
+              "wheelchair": "yes",
+              "website": "http://example.com"
+            }
+          }
+        }
+      }
+    ]
+
+    // Act
+    await processStopMatches(stopMatches, osmChange, mockRepository, { updateNodes: true })
+
+    // Assert
+    expect(osmChange.modifications).toHaveLength(0)
+  })
+
+  it("should reposition the node if the stop is >100m away", async () => {
+    // Arrange
+    const osmChange = new OsmChangeFile()
+    const stopMatches: MatchedBusStop[] = [
+      {
+        stop: fullTestStop,
+        match: {
+          ...definiteMatch.match,
+          element: { ...definiteMatch.match.element, lat: 0, lon: 0 }
+        }
+      }
+    ]
+
+    // Act
+    await processStopMatches(stopMatches, osmChange, mockRepository, { updateNodes: true })
+
+    // Assert
+    expect(osmChange.modifications).toHaveLength(1)
+
+    const node = osmChange.modifications[0] as Node
+    expect(node.lat).toEqual(47.676731074603886)
+    expect(node.lon).toEqual(-122.12513655172663)
+  })
+
+  it("shouldn't reposition the node if the stop is <=100m away", async () => {
+    // Arrange
+    const osmChange = new OsmChangeFile()
+    const stopMatches: MatchedBusStop[] = [
+      {
+        stop: fullTestStop,
+        match: {
+          ...definiteMatch.match,
+          element: {
+            ...definiteMatch.match.element,
+            lat: 47.6767241734473,
+            lon: -122.12499134417357
+          }
+        }
+      }
+    ]
+
+    // Act
+    await processStopMatches(stopMatches, osmChange, mockRepository, { updateNodes: true })
+
+    // Assert
+    expect(osmChange.modifications).toHaveLength(1)
+
+    const node = osmChange.modifications[0] as Node
+    expect(node.lat).toEqual(47.6767241734473)
+    expect(node.lon).toEqual(-122.12499134417357)
+  })
+
+  it("should render additional tags as static strings or Nunjucks templates", async () => {
+    // Arrange
+    const osmChange = new OsmChangeFile()
+    const stopMatches: MatchedBusStop[] = [ definiteMatch ]
+    const additionalTags = {
+      "test": "{{ name | lower }}",
+      "test2": "static string"
+    }
+    
+    // Act
+    await processStopMatches(stopMatches, osmChange, mockRepository, { updateNodes: true, additionalTags })
+
+    // Assert
+    expect(osmChange.modifications).toHaveLength(1)
+
+    const node = osmChange.modifications[0] as Node
+    expect(node.tags).toMatchObject({
+      "test": "main st & 1st ave",
+      "test2": "static string"
+    })
   })
 })

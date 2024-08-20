@@ -5,7 +5,11 @@ import GTFSTripStop from "./trip-stops"
 import GTFSTrip, { type IGTFSTrip } from "./trip"
 import type { BoundingBox } from "$lib/util/geo-math"
 
-export default class GTFSRepository extends Dexie {
+export interface IGTFSRepository {
+  getRoutesForAllStopIds(): Promise<Map<string, Set<IGTFSRoute>>>
+}
+
+export default class GTFSRepository extends Dexie implements IGTFSRepository {
   stops!: EntityTable<GTFSStop, "id">
   tripStops!: EntityTable<GTFSTripStop, "tripId">
   routes!: EntityTable<GTFSRoute, "id">
