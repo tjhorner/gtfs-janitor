@@ -5,38 +5,12 @@ import type { IGTFSStop } from "$lib/repository/gtfs/stop"
 import { describe, expect, it, vi } from "vitest"
 import type { MatchedBusStop } from "../matcher/bus-stops"
 import { processStopMatches, removeLifecyclePrefixes, tagsForOsmStop } from "./process-stop-matches"
-
-const fullTestStop: IGTFSStop = Object.freeze({
-  id: "12345",
-  code: "54321",
-  name: "Main St & 1st Ave",
-  desc: "Main Street and 1st Avenue",
-  lat: 47.676731074603886,
-  lon: -122.12513655172663,
-  zoneId: "123",
-  url: "http://example.com",
-  locationType: "0",
-  parentStation: "",
-  timezone: "America/Los_Angeles",
-  wheelchairBoarding: "1"
-})
-
-const fullTestRoute: IGTFSRoute = Object.freeze({
-  id: "1",
-  agencyId: "1",
-  shortName: "1",
-  longName: "Route 1",
-  desc: "Route 1",
-  type: GTFSRouteType.BUS,
-  color: "FF0000",
-  textColor: "FFFFFF",
-  url: ""
-})
+import { makeTestNode, makeTestRoute, makeTestStop } from "$lib/util/test"
 
 describe("tagsForOsmStop", () => {
-  it("should return the correct tags for a given GTFS stop", () => {
+  it("returns the correct tags for a given GTFS stop", () => {
     // Act
-    const tags = tagsForOsmStop(fullTestStop, [ ])
+    const tags = tagsForOsmStop(makeTestStop(), [ ])
 
     // Assert
     expect(tags).toEqual({
@@ -50,10 +24,9 @@ describe("tagsForOsmStop", () => {
 
   it("should remove extra spaces in the stop's name", () => {
     // Arrange
-    const gtfsStop: IGTFSStop = {
-      ...fullTestStop,
+    const gtfsStop: IGTFSStop = makeTestStop({
       name: "  Main St &   1st Ave  "
-    }
+    })
 
     // Act
     const tags = tagsForOsmStop(gtfsStop, [ ])
@@ -67,12 +40,11 @@ describe("tagsForOsmStop", () => {
     [ "2",               "no" ],
     [ "0",               undefined ],
     [ "any-other-value", undefined ]
-  ])("should assign the correct wheelchair tag", (wheelchairBoarding, expectedValue) => {
+  ])("assigns the correct wheelchair tag", (wheelchairBoarding, expectedValue) => {
     // Arrange
-    const gtfsStop: IGTFSStop = {
-      ...fullTestStop,
+    const gtfsStop: IGTFSStop = makeTestStop({
       wheelchairBoarding
-    }
+    })
 
     // Act
     const tags = tagsForOsmStop(gtfsStop, [ ])
@@ -88,31 +60,30 @@ describe("tagsForOsmStop", () => {
     [ GTFSRouteType.FERRY,      { "ferry": "yes", "amenity": "ferry_terminal" } ],
     [ GTFSRouteType.GONDOLA,    { "aerialway": "station" } ],
     [ GTFSRouteType.FUNICULAR,  { "railway": "station", "station": "funicular" } ],
-  ])("should return the correct tags for the route types the stop serves", (routeType, expectedTags) => {
+  ])("returns the correct tags for the route types the stop serves", (routeType, expectedTags) => {
     // Arrange
-    const busRoute: IGTFSRoute = {
-      ...fullTestRoute,
+    const busRoute: IGTFSRoute = makeTestRoute({
       type: routeType
-    }
+    })
 
     // Act
-    const tags = tagsForOsmStop(fullTestStop, [ busRoute ])
+    const tags = tagsForOsmStop(makeTestStop(), [ busRoute ])
 
     // Assert
     expect(tags).toMatchObject(expectedTags)
   })
 
-  it("should return the correctly-sorted route_ref tag for a stop that serves multiple routes", () => {
+  it("returns the correctly-sorted route_ref tag for a stop that serves multiple routes", () => {
     // Arrange
     const routes: IGTFSRoute[] = [
-      { ...fullTestRoute, id: "2", shortName: "2" },
-      { ...fullTestRoute, id: "3", shortName: "B" },
-      { ...fullTestRoute, id: "4", shortName: "100" },
-      { ...fullTestRoute, id: "1", shortName: "1" },
+      makeTestRoute({ id: "2", shortName: "2" }),
+      makeTestRoute({ id: "3", shortName: "B" }),
+      makeTestRoute({ id: "4", shortName: "100" }),
+      makeTestRoute({ id: "1", shortName: "1" })
     ]
 
     // Act
-    const tags = tagsForOsmStop(fullTestStop, routes)
+    const tags = tagsForOsmStop(makeTestStop(), routes)
 
     // Assert
     expect(tags).toMatchObject({
@@ -120,12 +91,11 @@ describe("tagsForOsmStop", () => {
     })
   })
 
-  it("should set the local_ref for stops that are bays", () => {
+  it("sets the local_ref for stops that are bays", () => {
     // Arrange
-    const bayStop: IGTFSStop = {
-      ...fullTestStop,
+    const bayStop: IGTFSStop = makeTestStop({
       name: "Fictional Transit Station - Bay 1"
-    }
+    })
 
     // Act
     const tags = tagsForOsmStop(bayStop, [ ])
@@ -170,27 +140,19 @@ describe("processStopMatches", () => {
   }
 
   const definiteMatch = Object.freeze({
-    stop: fullTestStop,
+    stop: makeTestStop(),
     match: {
       ambiguous: false,
       matchedBy: "test",
-      element: {
-        type: "node",
-        id: 12345,
-        lat: 0,
-        lon: 0,
-        changeset: 0,
-        version: 1,
-        tags: { }
-      }
+      element: makeTestNode()
     }
   } as const)
 
-  it("should create new nodes for unmatched stops", async () => {
+  it("creates new nodes for unmatched stops", async () => {
     // Arrange
     const osmChange = new OsmChangeFile()
     const stopMatches: MatchedBusStop[] = [
-      { stop: fullTestStop, match: null }
+      { stop: makeTestStop(), match: null }
     ]
 
     // Act
@@ -217,7 +179,7 @@ describe("processStopMatches", () => {
     // Arrange
     const osmChange = new OsmChangeFile()
     const stopMatches: MatchedBusStop[] = [
-      { stop: fullTestStop, match: null }
+      { stop: makeTestStop(), match: null }
     ]
 
     // Act
@@ -227,7 +189,7 @@ describe("processStopMatches", () => {
     expect(osmChange.additions).toHaveLength(0)
   })
 
-  it("should modify existing nodes that have been matched to stops", async () => {
+  it("modifies existing nodes that have been matched to stops", async () => {
     // Arrange
     const osmChange = new OsmChangeFile()
     const stopMatches: MatchedBusStop[] = [ definiteMatch ]
@@ -256,7 +218,7 @@ describe("processStopMatches", () => {
     const osmChange = new OsmChangeFile()
     const stopMatches: MatchedBusStop[] = [
       {
-        stop: fullTestStop,
+        stop: makeTestStop(),
         match: {
           ...definiteMatch.match,
           element: {
@@ -282,12 +244,12 @@ describe("processStopMatches", () => {
     expect(osmChange.modifications).toHaveLength(0)
   })
 
-  it("should reposition the node if the stop is >100m away", async () => {
+  it("repositions the node if the stop is >100m away", async () => {
     // Arrange
     const osmChange = new OsmChangeFile()
     const stopMatches: MatchedBusStop[] = [
       {
-        stop: fullTestStop,
+        stop: makeTestStop(),
         match: {
           ...definiteMatch.match,
           element: { ...definiteMatch.match.element, lat: 0, lon: 0 }
@@ -306,12 +268,12 @@ describe("processStopMatches", () => {
     expect(node.lon).toEqual(-122.12513655172663)
   })
 
-  it("shouldn't reposition the node if the stop is <=100m away", async () => {
+  it("should not reposition the node if the stop is <=100m away", async () => {
     // Arrange
     const osmChange = new OsmChangeFile()
     const stopMatches: MatchedBusStop[] = [
       {
-        stop: fullTestStop,
+        stop: makeTestStop(),
         match: {
           ...definiteMatch.match,
           element: {
@@ -334,7 +296,7 @@ describe("processStopMatches", () => {
     expect(node.lon).toEqual(-122.12499134417357)
   })
 
-  it("should render additional tags as static strings or Nunjucks templates", async () => {
+  it("renders additional tags as static strings or Nunjucks templates", async () => {
     // Arrange
     const osmChange = new OsmChangeFile()
     const stopMatches: MatchedBusStop[] = [ definiteMatch ]
