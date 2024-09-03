@@ -50,3 +50,5 @@ gtfsOverrides:
     100224: { route_type: "11" } # Route 44
     100447: { route_type: "11" } # Route 49
     100264: { route_type: "11" } # Route 70
+  stops:
+    68498: { stop_name: "Redmond Technology Station - Bay 8" }
