@@ -49,8 +49,8 @@ export class OsmChangeFile implements OsmChanges {
     }
   }
 
-  #checkForDuplicateId(element: OverpassElement, array: any[]) {
-    const dupe = array.find(e => e[element.type][0]._attr.id === element.id)
+  #checkForDuplicateId(element: OverpassElement, array: OverpassElement[]) {
+    const dupe = array.find(e => e.id === element.id)
     if (dupe) {
       console.warn(`Duplicate ID ${element.id} found in osmChange file`)
       console.warn(element, dupe)
