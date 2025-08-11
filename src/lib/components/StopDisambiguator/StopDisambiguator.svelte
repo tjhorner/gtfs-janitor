@@ -178,7 +178,7 @@
 <style>
   .tags {
     display: block;
-    overflow-x: scroll;
+    overflow-x: auto;
     flex-shrink: 0;
   }
 
@@ -186,7 +186,7 @@
     display: flex;
     flex-direction: column;
     padding: 1rem;
-    overflow: scroll;
+    overflow: auto;
     height: 100%;
   }
 

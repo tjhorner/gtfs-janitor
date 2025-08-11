@@ -56,22 +56,22 @@ export function tagsForOsmStop(stop: IGTFSStop, routesServingStop: IGTFSRoute[])
   const additionalTagsForRouteType: { [key: string]: string } = { }
 
   if (routeTypesAtStop.has(GTFSRouteType.BUS)) {
-    additionalTagsForRouteType["bus"] = "yes"
+    // additionalTagsForRouteType["bus"] = "yes"
     additionalTagsForRouteType["highway"] = "bus_stop"
   }
 
   if (routeTypesAtStop.has(GTFSRouteType.TROLLEYBUS)) {
-    additionalTagsForRouteType["trolleybus"] = "yes"
+    // additionalTagsForRouteType["trolleybus"] = "yes"
     additionalTagsForRouteType["highway"] = "bus_stop"
   }
 
   if (routeTypesAtStop.has(GTFSRouteType.TRAM)) {
-    additionalTagsForRouteType["tram"] = "yes"
+    // additionalTagsForRouteType["tram"] = "yes"
     additionalTagsForRouteType["railway"] = "tram_stop"
   }
 
   if (routeTypesAtStop.has(GTFSRouteType.FERRY)) {
-    additionalTagsForRouteType["ferry"] = "yes"
+    // additionalTagsForRouteType["ferry"] = "yes"
     additionalTagsForRouteType["amenity"] = "ferry_terminal"
   }
 
